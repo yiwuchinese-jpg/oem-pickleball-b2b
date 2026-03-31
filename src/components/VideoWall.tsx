@@ -86,6 +86,7 @@ export default function VideoWall() {
                  loop 
                  muted 
                  playsInline 
+                 preload="none"
                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                  src={video.src} 
                />

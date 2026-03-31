@@ -2,12 +2,13 @@
 
 import { useRef, useMemo, useState, useEffect } from "react";
 import Image from "next/image";
-import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { MessageCircle, X } from "lucide-react";
 
 export default function ProductShowcase() {
   const containerRef = useRef<HTMLElement>(null);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [isMobile, setIsMobile] = useState(false);
   
   // Generating pairs for the 21 uploaded products
   const productImages = useMemo(() => Array.from({ length: 21 }, (_, i) => `/products/${i + 1}.png`), []);
@@ -17,13 +18,9 @@ export default function ProductShowcase() {
   const lane2 = productImages.slice(7, 14);
   const lane3 = productImages.slice(14, 21);
 
-  const { scrollYProgress } = useScroll({
-    target: containerRef,
-    offset: ["start end", "end start"]
-  });
-
-  const rotateX = useTransform(scrollYProgress, [0, 1], [10, -10]);
-  const rotateZ = useTransform(scrollYProgress, [0, 1], [-2, 2]);
+  useEffect(() => {
+    setIsMobile(window.innerWidth < 768);
+  }, []);
 
   // Lock body scroll when modal is open
   useEffect(() => {
@@ -77,14 +74,11 @@ export default function ProductShowcase() {
         </div>
 
         {/* Infinite Product Marquee Grid */}
-        <motion.div 
-          style={{ rotateX, rotateZ, perspective: 1000 }}
-          className="mt-[20vh] md:mt-[30vh] flex flex-col gap-6 md:gap-10 transform-gpu"
-        >
-          <MarqueeRow images={lane1} duration={40} reverse={false} onSelect={setSelectedImage} />
-          <MarqueeRow images={lane2} duration={50} reverse={true} onSelect={setSelectedImage} />
-          <MarqueeRow images={lane3} duration={45} reverse={false} onSelect={setSelectedImage} />
-        </motion.div>
+        <div className="mt-[20vh] md:mt-[30vh] flex flex-col gap-6 md:gap-10 transform-gpu">
+          <MarqueeRow images={lane1} duration={isMobile ? 25 : 40} reverse={false} onSelect={setSelectedImage} />
+          <MarqueeRow images={lane2} duration={isMobile ? 30 : 50} reverse={true} onSelect={setSelectedImage} />
+          <MarqueeRow images={lane3} duration={isMobile ? 28 : 45} reverse={false} onSelect={setSelectedImage} />
+        </div>
 
         {/* Gradient Vignettes */}
         <div className="absolute inset-y-0 left-0 w-[10vw] bg-gradient-to-r from-[#050505] to-transparent pointer-events-none z-20" />
@@ -207,7 +201,7 @@ function MarqueeRow({
                 src={src}
                 alt={`Product Model ${idx}`}
                 fill
-                loading="eager"
+                loading="lazy"
                 className="object-cover group-hover:scale-110 transition-transform duration-700 ease-out will-change-transform"
                 sizes="(max-width: 768px) 55vw, 20vw"
               />
