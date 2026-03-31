@@ -27,8 +27,9 @@ export default function VideoWall() {
     setIsMobile(mobile);
     if (mobile) return;
 
-    // Delay so the dynamic-imported component's layout fully settles
-    // before GSAP measures scrollWidth
+    let ctx: ReturnType<typeof gsap.context> | null = null;
+
+    // Wait for layout to fully settle after dynamic import
     const timer = setTimeout(() => {
       if (!sectionRef.current || !scrollTrackRef.current) return;
 
@@ -37,7 +38,7 @@ export default function VideoWall() {
 
       if (scrollWidth <= 0) return;
 
-      const ctx = gsap.context(() => {
+      ctx = gsap.context(() => {
         gsap.to(scrollTrackRef.current, {
           x: -scrollWidth,
           ease: "none",
@@ -52,11 +53,13 @@ export default function VideoWall() {
           },
         });
       }, sectionRef);
+    }, 500); // Slightly after SmoothScroll's 600ms refresh
 
-      return () => ctx.revert();
-    }, 400); // wait 400ms for layout to settle after dynamic import
-
-    return () => clearTimeout(timer);
+    // ✅ Correct: cleanup runs at useEffect level, not inside setTimeout
+    return () => {
+      clearTimeout(timer);
+      ctx?.revert();
+    };
   }, []);
 
   return (
