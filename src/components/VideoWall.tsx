@@ -11,16 +11,15 @@ export default function VideoWall() {
   const sectionRef = useRef<HTMLElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
-  // Developer Note: Once videos are uploaded to the /public folder, map their filenames here.
-  // Using placeholders strings for now to render the empty boxes with autoPlay logic ready.
+  const BASE = "https://github.com/yiwuchinese-jpg/oem-pickleball-b2b/releases/download/v1.0-assets";
   const factoryVideos = [
-    { id: 1, src: "/videos/5.mp4", title: "Factory Production Line" },
-    { id: 2, src: "/videos/7.mp4", title: "Roto-Molding Quality Check" },
-    { id: 3, src: "/videos/3.mp4", title: "PPA Pro Tournament Play" },
-    { id: 4, src: "/videos/4.mp4", title: "Live Matches & Testing" },
-    { id: 5, src: "/videos/1.mp4", title: "Court Dynamics Analysis" },
-    { id: 6, src: "/videos/2.mp4", title: "Pro Match Strategy" },
-    { id: 7, src: "/videos/6.mp4", title: "Premium Brand Evaluation" },
+    { id: 1, src: `${BASE}/5.mp4`, title: "Factory Production Line" },
+    { id: 2, src: `${BASE}/7.mp4`, title: "Roto-Molding Quality Check" },
+    { id: 3, src: `${BASE}/3.mp4`, title: "PPA Pro Tournament Play" },
+    { id: 4, src: `${BASE}/4.mp4`, title: "Live Matches & Testing" },
+    { id: 5, src: `${BASE}/1.mp4`, title: "Court Dynamics Analysis" },
+    { id: 6, src: `${BASE}/2.mp4`, title: "Pro Match Strategy" },
+    { id: 7, src: `${BASE}/6.mp4`, title: "Premium Brand Evaluation" },
   ];
 
   useEffect(() => {
