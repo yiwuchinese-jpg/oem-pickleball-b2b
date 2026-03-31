@@ -24,9 +24,9 @@ export default function Hero() {
 
   useEffect(() => {
     if (!containerRef.current) return;
-    
+
     const ctx = gsap.context(() => {
-      // 1. Scroll Parallax (Applied to outer wrapper to prevent timeline conflict)
+      // 1. Scroll Parallax on the ball
       gsap.to(ballScrollRef.current, {
         scrollTrigger: {
           trigger: containerRef.current,
@@ -38,39 +38,43 @@ export default function Hero() {
         rotation: 180,
       });
 
-      // 2. Burst Entrance Timeline
+      // 2. Burst Entrance Timeline — all transform-based (no layout repaints)
       const tl = gsap.timeline({ defaults: { ease: "back.out(1.2)" } });
-      
-      // Start ball from small to normal (Applied to inner wrapper)
-      tl.fromTo(ballLoadRef.current, 
-        { scale: 0, rotation: -90 }, 
-        { scale: 1, rotation: 0, duration: 1.5, ease: "power3.out" }
+
+      // Ball scales in
+      tl.fromTo(ballLoadRef.current,
+        { scale: 0, rotation: -90 },
+        { scale: 1, rotation: 0, duration: 1.2, ease: "power3.out" }
       );
 
-      // Title drop in
-      tl.fromTo(titleRef.current, { opacity: 0, y: -40 }, { opacity: 1, y: 0, duration: 1 }, "-=1.0");
+      // Title
+      tl.fromTo(titleRef.current,
+        { opacity: 0, y: -30 },
+        { opacity: 1, y: 0, duration: 0.8 },
+        "-=0.8"
+      );
 
-      // Fly-out Animation Generator 
-      // Animate FROM center TO their native absolute positions
-      const flyOut = (el: HTMLElement | null, delayOffset: string) => {
-        if (!el) return;
-        tl.fromTo(el, 
-          { x: 0, y: 0, scale: 0, opacity: 0, top: "50%", left: "50%", xPercent: -50, yPercent: -50 }, 
-          { x: 0, y: 0, scale: 1, opacity: 1, top: el.dataset.top, left: el.dataset.left, bottom: el.dataset.bottom, right: el.dataset.right, xPercent: 0, yPercent: 0, duration: 1.2 }, 
-          delayOffset
+      // Tags: we use translateX/Y from center — pure GPU path, zero layout thrash
+      const tagAnimations = [
+        { ref: priceRef.current, x: -220, y: -120 },
+        { ref: badge1Ref.current, x: 200, y: -80 },
+        { ref: badge2Ref.current, x: -200, y: 100 },
+        { ref: badge3Ref.current, x: 180, y: 120 },
+      ];
+
+      tagAnimations.forEach(({ ref, x, y }, i) => {
+        tl.fromTo(ref,
+          { opacity: 0, scale: 0.4, x: 0, y: 0 },
+          { opacity: 1, scale: 1, x, y, duration: 1.0, ease: "back.out(1.4)" },
+          `-=${i === 0 ? 0.6 : 0.9}`
         );
-      };
-
-      // Ensure they arrive at scattered, safe absolute coordinates
-      flyOut(priceRef.current, "-=1.0");
-      flyOut(badge1Ref.current, "-=1.1");
-      flyOut(badge2Ref.current, "-=1.1");
-      flyOut(badge3Ref.current, "-=1.2");
+      });
 
     }, containerRef);
 
     return () => ctx.revert();
   }, []);
+
 
   return (
     <section 
@@ -106,11 +110,11 @@ export default function Hero() {
           </div>
         </div>
 
-        {/* Burst Element 1: Factory Price (Top Left) */}
-        <div 
-          ref={priceRef} 
-          data-top="5%" data-left="2%"
-          className="absolute z-30 transform -rotate-3 hover:scale-105 transition-transform"
+        {/* Burst Element 1: Factory Price */}
+        <div
+          ref={priceRef}
+          className="absolute z-30 top-1/2 left-1/2 transform -rotate-3 hover:scale-105 transition-transform"
+          style={{ opacity: 0 }}
         >
           <div className="bg-background/90 backdrop-blur-xl border border-neon/50 px-5 md:px-8 py-3 md:py-5 rounded-3xl shadow-[0_0_30px_rgba(57,255,20,0.15)]">
             <span className="text-xs md:text-sm font-bold text-gray-400 block mb-1 uppercase tracking-wider">Factory Price</span>
@@ -118,11 +122,11 @@ export default function Hero() {
           </div>
         </div>
 
-        {/* Burst Element 2: MOQ (Top Right) */}
-        <div 
-          ref={badge1Ref} 
-          data-top="15%" data-left="auto" data-right="2%"
-          className="absolute z-30 transform rotate-3 hover:scale-105 transition-transform"
+        {/* Burst Element 2: MOQ */}
+        <div
+          ref={badge1Ref}
+          className="absolute z-30 top-1/2 left-1/2 transform rotate-3 hover:scale-105 transition-transform"
+          style={{ opacity: 0 }}
         >
           <div className="bg-[#0b1120] border border-white/20 px-4 md:px-6 py-2 md:py-4 rounded-2xl flex items-center gap-3 shadow-xl">
              <div className="w-2.5 h-2.5 rounded-full bg-neon animate-pulse" />
@@ -130,11 +134,11 @@ export default function Hero() {
           </div>
         </div>
 
-        {/* Burst Element 3: China Direct (Bottom Left) */}
-        <div 
-          ref={badge2Ref} 
-          data-top="auto" data-bottom="15%" data-left="2%"
-          className="absolute z-30 transform -rotate-2 hover:scale-105 transition-transform"
+        {/* Burst Element 3: China Direct */}
+        <div
+          ref={badge2Ref}
+          className="absolute z-30 top-1/2 left-1/2 transform -rotate-2 hover:scale-105 transition-transform"
+          style={{ opacity: 0 }}
         >
           <div className="bg-[#0b1120] border border-white/20 px-4 md:px-6 py-2 md:py-4 rounded-2xl flex items-center gap-3 shadow-xl">
              <ShieldCheck className="text-neon w-5 h-5 md:w-6 md:h-6" />
@@ -142,11 +146,11 @@ export default function Hero() {
           </div>
         </div>
 
-        {/* Burst Element 4: DDP Shipping (Bottom Right) */}
-        <div 
-          ref={badge3Ref} 
-          data-top="auto" data-bottom="5%" data-left="auto" data-right="2%"
-          className="absolute z-30 transform rotate-2 hover:scale-105 transition-transform"
+        {/* Burst Element 4: DDP Shipping */}
+        <div
+          ref={badge3Ref}
+          className="absolute z-30 top-1/2 left-1/2 transform rotate-2 hover:scale-105 transition-transform"
+          style={{ opacity: 0 }}
         >
           <div className="bg-[#0b1120] border border-white/20 px-4 md:px-6 py-2 md:py-4 rounded-2xl flex items-center gap-3 shadow-xl">
              <Truck className="text-neon w-5 h-5 md:w-6 md:h-6" />
