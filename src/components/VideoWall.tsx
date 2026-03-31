@@ -12,7 +12,7 @@ export default function VideoWall() {
   const scrollTrackRef = useRef<HTMLDivElement>(null);
   const [isMobile, setIsMobile] = useState(false);
 
-  const BASE = "https://github.com/yiwuchinese-jpg/oem-pickleball-b2b/releases/download/v1.0-assets";
+  const BASE = "https://github.com/yiwuchinese-jpg/oem-pickleball-b2b/releases/download/v1.1-compressed";
   const factoryVideos = [
     { id: 1, src: `${BASE}/5.mp4`, title: "Factory Production Line" },
     { id: 2, src: `${BASE}/7.mp4`, title: "Roto-Molding Quality Check" },
