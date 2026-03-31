@@ -41,7 +41,7 @@ export default function ProductShowcase() {
     <>
       <section 
         ref={containerRef} 
-        className="bg-[#050505] min-h-[120vh] relative overflow-hidden py-32 border-t border-white/5"
+        className="bg-[#050505] min-h-[120vh] relative overflow-x-hidden py-32 border-t border-white/5"
       >
         <style dangerouslySetInnerHTML={{ __html: `
           @keyframes marquee-forward {
