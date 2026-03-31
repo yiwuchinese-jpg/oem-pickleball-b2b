@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -14,19 +14,24 @@ export default function Hero() {
   const containerRef = useRef<HTMLDivElement>(null);
   const ballScrollRef = useRef<HTMLDivElement>(null);
   const ballLoadRef = useRef<HTMLDivElement>(null);
+  const titleRef = useRef<HTMLDivElement>(null);
 
-  // Content refs for burst effect
+  // Desktop burst refs
   const priceRef = useRef<HTMLDivElement>(null);
   const badge1Ref = useRef<HTMLDivElement>(null);
   const badge2Ref = useRef<HTMLDivElement>(null);
   const badge3Ref = useRef<HTMLDivElement>(null);
-  const titleRef = useRef<HTMLDivElement>(null);
+
+  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
+    const mobile = window.innerWidth < 768;
+    setIsMobile(mobile);
+
     if (!containerRef.current) return;
 
     const ctx = gsap.context(() => {
-      // 1. Scroll Parallax on the ball
+      // Ball scroll parallax
       gsap.to(ballScrollRef.current, {
         scrollTrigger: {
           trigger: containerRef.current,
@@ -34,14 +39,13 @@ export default function Hero() {
           end: "bottom top",
           scrub: 1,
         },
-        y: 350,
-        rotation: 180,
+        y: 200,
+        rotation: 120,
       });
 
-      // 2. Burst Entrance Timeline — all transform-based (no layout repaints)
       const tl = gsap.timeline({ defaults: { ease: "back.out(1.2)" } });
 
-      // Ball scales in
+      // Ball entrance
       tl.fromTo(ballLoadRef.current,
         { scale: 0, rotation: -90 },
         { scale: 1, rotation: 0, duration: 1.2, ease: "power3.out" }
@@ -54,36 +58,36 @@ export default function Hero() {
         "-=0.8"
       );
 
-      // Tags: we use translateX/Y from center — pure GPU path, zero layout thrash
-      const tagAnimations = [
-        { ref: priceRef.current, x: -220, y: -120 },
-        { ref: badge1Ref.current, x: 200, y: -80 },
-        { ref: badge2Ref.current, x: -200, y: 100 },
-        { ref: badge3Ref.current, x: 180, y: 120 },
-      ];
-
-      tagAnimations.forEach(({ ref, x, y }, i) => {
-        tl.fromTo(ref,
-          { opacity: 0, scale: 0.4, x: 0, y: 0 },
-          { opacity: 1, scale: 1, x, y, duration: 1.0, ease: "back.out(1.4)" },
-          `-=${i === 0 ? 0.6 : 0.9}`
-        );
-      });
+      // Desktop only: burst tags with large offsets
+      if (!mobile) {
+        const tagAnimations = [
+          { ref: priceRef.current,  x: -390, y: -150 },
+          { ref: badge1Ref.current, x:  360, y: -120 },
+          { ref: badge2Ref.current, x: -360, y:  140 },
+          { ref: badge3Ref.current, x:  340, y:  160 },
+        ];
+        tagAnimations.forEach(({ ref, x, y }, i) => {
+          tl.fromTo(ref,
+            { opacity: 0, scale: 0.4, x: 0, y: 0 },
+            { opacity: 1, scale: 1, x, y, duration: 1.0, ease: "back.out(1.4)" },
+            `-=${i === 0 ? 0.6 : 0.9}`
+          );
+        });
+      }
 
     }, containerRef);
 
     return () => ctx.revert();
   }, []);
 
-
   return (
-    <section 
-      ref={containerRef} 
-      className="relative min-h-[100vh] w-full flex flex-col items-center justify-start overflow-hidden bg-background pt-[12vh] pb-[5vh]"
+    <section
+      ref={containerRef}
+      className="relative w-full flex flex-col items-center justify-start overflow-hidden bg-background pt-[10vh] pb-[5vh]"
     >
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--color-neon)_0%,_transparent_60%)] opacity-10 pointer-events-none" />
 
-      {/* Top Title Group - Placed completely above safe zone */}
+      {/* Title */}
       <div ref={titleRef} className="relative z-40 text-center w-full px-4 shrink-0">
         <h1 className="text-4xl md:text-6xl lg:text-7xl font-black text-white leading-tight uppercase tracking-tight drop-shadow-2xl">
           Premium Pickleball <br className="hidden md:block" />
@@ -93,78 +97,114 @@ export default function Hero() {
         </h1>
       </div>
 
-      {/* Hero Interaction Area (Relative constraint box for absolute flying tags) */}
-      <div className="relative w-full max-w-7xl flex-1 flex items-center justify-center min-h-[50vh] mt-4 md:mt-8 mx-auto px-2 md:px-8">
+      {/* ── MOBILE LAYOUT ── */}
+      {isMobile ? (
+        <div className="flex flex-col items-center w-full px-5 mt-6 gap-5">
+          {/* Ball */}
+          <div ref={ballScrollRef}>
+            <div ref={ballLoadRef} className="rounded-full shadow-[0_0_80px_rgba(57,255,20,0.3)] bg-black" style={{ clipPath: "circle(48% at 50% 50%)" }}>
+              <Image
+                src="/pickleball.png"
+                alt="Premium Pickleball"
+                width={280}
+                height={280}
+                className="w-[220px] object-contain filter brightness-110 contrast-125"
+                priority
+              />
+            </div>
+          </div>
 
-        {/* Center Ball */}
-        <div ref={ballScrollRef} className="absolute z-20">
-          <div ref={ballLoadRef} className="rounded-full shadow-[0_0_100px_rgba(57,255,20,0.3)] bg-black" style={{ clipPath: "circle(48% at 50% 50%)" }}>
-            <Image
-              src="/pickleball.png"
-              alt="Premium Pickleball"
-              width={500}
-              height={500}
-              className="w-[200px] md:w-[380px] object-contain filter brightness-110 contrast-125"
-              priority
-            />
+          {/* Tags grid below ball */}
+          <div className="grid grid-cols-2 gap-3 w-full max-w-sm">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.8 }}
+              className="bg-background/90 border border-neon/50 px-4 py-3 rounded-2xl shadow-[0_0_20px_rgba(57,255,20,0.1)] col-span-2"
+            >
+              <span className="text-[10px] font-bold text-gray-400 block mb-0.5 uppercase tracking-wider">Factory Price</span>
+              <span className="text-3xl font-black text-white">Only $0.20<span className="text-base text-neon">/pc</span></span>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1.0 }}
+              className="bg-[#0b1120] border border-white/20 px-3 py-3 rounded-2xl flex items-center gap-2"
+            >
+              <div className="w-2 h-2 rounded-full bg-neon animate-pulse flex-shrink-0" />
+              <span className="text-sm font-bold text-white">MOQ 1000 pcs</span>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1.1 }}
+              className="bg-[#0b1120] border border-white/20 px-3 py-3 rounded-2xl flex items-center gap-2"
+            >
+              <ShieldCheck className="text-neon w-4 h-4 flex-shrink-0" />
+              <span className="text-sm font-bold text-white">China Direct</span>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1.2 }}
+              className="bg-[#0b1120] border border-white/20 px-3 py-3 rounded-2xl flex items-center gap-2 col-span-2"
+            >
+              <Truck className="text-neon w-4 h-4 flex-shrink-0" />
+              <span className="text-sm font-bold text-white">DDP Shipping Available Worldwide</span>
+            </motion.div>
           </div>
         </div>
+      ) : (
+        /* ── DESKTOP LAYOUT ── */
+        <div className="relative w-full max-w-7xl flex-1 flex items-center justify-center min-h-[55vh] mt-8 mx-auto px-8">
+          {/* Ball */}
+          <div ref={ballScrollRef} className="absolute z-20">
+            <div ref={ballLoadRef} className="rounded-full shadow-[0_0_100px_rgba(57,255,20,0.3)] bg-black" style={{ clipPath: "circle(48% at 50% 50%)" }}>
+              <Image
+                src="/pickleball.png"
+                alt="Premium Pickleball"
+                width={500}
+                height={500}
+                className="w-[380px] object-contain filter brightness-110 contrast-125"
+                priority
+              />
+            </div>
+          </div>
 
-        {/* Burst Element 1: Factory Price */}
-        <div
-          ref={priceRef}
-          className="absolute z-30 top-1/2 left-1/2 transform -rotate-3 hover:scale-105 transition-transform"
-          style={{ opacity: 0 }}
-        >
-          <div className="bg-background/90 backdrop-blur-xl border border-neon/50 px-5 md:px-8 py-3 md:py-5 rounded-3xl shadow-[0_0_30px_rgba(57,255,20,0.15)]">
-            <span className="text-xs md:text-sm font-bold text-gray-400 block mb-1 uppercase tracking-wider">Factory Price</span>
-            <span className="text-2xl md:text-5xl font-black text-white">Only $0.20<span className="text-sm md:text-xl text-neon">/pc</span></span>
+          {/* Factory Price - top left */}
+          <div ref={priceRef} className="absolute z-30 top-1/2 left-1/2 -rotate-3" style={{ opacity: 0 }}>
+            <div className="bg-background/90 backdrop-blur-xl border border-neon/50 px-8 py-5 rounded-3xl shadow-[0_0_30px_rgba(57,255,20,0.15)]">
+              <span className="text-sm font-bold text-gray-400 block mb-1 uppercase tracking-wider">Factory Price</span>
+              <span className="text-5xl font-black text-white">Only $0.20<span className="text-xl text-neon">/pc</span></span>
+            </div>
+          </div>
+
+          {/* MOQ - top right */}
+          <div ref={badge1Ref} className="absolute z-30 top-1/2 left-1/2 rotate-3" style={{ opacity: 0 }}>
+            <div className="bg-[#0b1120] border border-white/20 px-6 py-4 rounded-2xl flex items-center gap-3 shadow-xl">
+              <div className="w-2.5 h-2.5 rounded-full bg-neon animate-pulse" />
+              <span className="text-lg font-bold text-white whitespace-nowrap">MOQ 1000 pcs</span>
+            </div>
+          </div>
+
+          {/* China Direct - bottom left */}
+          <div ref={badge2Ref} className="absolute z-30 top-1/2 left-1/2 -rotate-2" style={{ opacity: 0 }}>
+            <div className="bg-[#0b1120] border border-white/20 px-6 py-4 rounded-2xl flex items-center gap-3 shadow-xl">
+              <ShieldCheck className="text-neon w-6 h-6" />
+              <span className="text-lg font-bold text-white whitespace-nowrap">China Direct Wholesaler</span>
+            </div>
+          </div>
+
+          {/* DDP Shipping - bottom right */}
+          <div ref={badge3Ref} className="absolute z-30 top-1/2 left-1/2 rotate-2" style={{ opacity: 0 }}>
+            <div className="bg-[#0b1120] border border-white/20 px-6 py-4 rounded-2xl flex items-center gap-3 shadow-xl">
+              <Truck className="text-neon w-6 h-6" />
+              <span className="text-lg font-bold text-white whitespace-nowrap">DDP Shipping Available</span>
+            </div>
           </div>
         </div>
+      )}
 
-        {/* Burst Element 2: MOQ */}
-        <div
-          ref={badge1Ref}
-          className="absolute z-30 top-1/2 left-1/2 transform rotate-3 hover:scale-105 transition-transform"
-          style={{ opacity: 0 }}
-        >
-          <div className="bg-[#0b1120] border border-white/20 px-4 md:px-6 py-2 md:py-4 rounded-2xl flex items-center gap-3 shadow-xl">
-             <div className="w-2.5 h-2.5 rounded-full bg-neon animate-pulse" />
-             <span className="text-sm md:text-lg font-bold text-white whitespace-nowrap">MOQ 1000 pcs</span>
-          </div>
-        </div>
-
-        {/* Burst Element 3: China Direct */}
-        <div
-          ref={badge2Ref}
-          className="absolute z-30 top-1/2 left-1/2 transform -rotate-2 hover:scale-105 transition-transform"
-          style={{ opacity: 0 }}
-        >
-          <div className="bg-[#0b1120] border border-white/20 px-4 md:px-6 py-2 md:py-4 rounded-2xl flex items-center gap-3 shadow-xl">
-             <ShieldCheck className="text-neon w-5 h-5 md:w-6 md:h-6" />
-             <span className="text-sm md:text-lg font-bold text-white whitespace-nowrap">China Direct Wholesaler</span>
-          </div>
-        </div>
-
-        {/* Burst Element 4: DDP Shipping */}
-        <div
-          ref={badge3Ref}
-          className="absolute z-30 top-1/2 left-1/2 transform rotate-2 hover:scale-105 transition-transform"
-          style={{ opacity: 0 }}
-        >
-          <div className="bg-[#0b1120] border border-white/20 px-4 md:px-6 py-2 md:py-4 rounded-2xl flex items-center gap-3 shadow-xl">
-             <Truck className="text-neon w-5 h-5 md:w-6 md:h-6" />
-             <span className="text-sm md:text-lg font-bold text-white whitespace-nowrap">DDP Shipping Available</span>
-          </div>
-        </div>
-
-      </div>
-
-      {/* CTA Button at very bottom strictly */}
-      <motion.div 
+      {/* CTA Button */}
+      <motion.div
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 1.8, duration: 0.8 }}
+        transition={{ delay: isMobile ? 1.4 : 1.8, duration: 0.8 }}
         className="relative z-40 shrink-0 mt-8 mb-4 px-4"
       >
         <MagneticButton onClick={() => {
