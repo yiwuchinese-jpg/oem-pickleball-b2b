@@ -2,13 +2,14 @@
 
 import { MessageCircle, Mail, MapPin } from "lucide-react";
 import Image from "next/image";
+import { trackCTAClick, trackWhatsAppOpen, trackEmailClick } from "@/lib/analytics";
 
 export default function Footer() {
   const whatsappUrl = "https://wa.me/8618666680913?text=Hi, I saw your pickleball ad, I want to order...";
 
   return (
     <>
-      <footer id="inquiry" className="bg-background pt-24 pb-32 lg:pb-12 border-t border-white/5 relative z-10">
+      <footer id="inquiry" data-track-section="Footer" className="bg-background pt-24 pb-32 lg:pb-12 border-t border-white/5 relative z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-16 mb-16">
@@ -43,6 +44,10 @@ export default function Footer() {
                 href={whatsappUrl}
                 target="_blank"
                 rel="noreferrer"
+                onClick={() => {
+                  trackCTAClick("Footer_WhatsApp");
+                  trackWhatsAppOpen("Footer_WhatsApp");
+                }}
                 className="w-full flex items-center justify-center gap-3 bg-[#25D366] text-white py-4 rounded-xl font-bold text-lg hover:bg-[#20BE59] hover:shadow-[0_0_20px_rgba(37,211,102,0.4)] transition-all transform hover:-translate-y-1"
               >
                 <MessageCircle className="w-6 h-6" /> WhatsApp Us Now
@@ -56,6 +61,7 @@ export default function Footer() {
               
               <a 
                 href="mailto:buydiscoball@gmail.com"
+                onClick={() => trackEmailClick("Footer_Email")}
                 className="w-full flex items-center justify-center gap-3 bg-white/10 text-white py-4 mt-6 rounded-xl font-bold text-lg hover:bg-white/20 transition-colors"
               >
                 <Mail className="w-6 h-6 text-gray-300" /> Send Email Inquiry
@@ -80,12 +86,17 @@ export default function Footer() {
           href={whatsappUrl}
           target="_blank"
           rel="noreferrer"
+          onClick={() => {
+            trackCTAClick("MobileSticky_WhatsApp");
+            trackWhatsAppOpen("MobileSticky_WhatsApp");
+          }}
           className="flex-1 bg-[#25D366] text-white py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 shadow-lg"
         >
           <MessageCircle className="w-5 h-5" /> Chat WhatsApp
         </a>
         <a 
           href="mailto:buydiscoball@gmail.com"
+          onClick={() => trackEmailClick("MobileSticky_Email")}
           className="bg-white/10 text-white p-3.5 rounded-xl flex items-center justify-center border border-white/20"
         >
           <Mail className="w-5 h-5" />

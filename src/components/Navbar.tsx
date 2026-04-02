@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { Link } from "lucide-react";
 import { motion } from "framer-motion";
+import { trackCTAClick, trackWhatsAppOpen } from "@/lib/analytics";
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
@@ -17,6 +18,8 @@ export default function Navbar() {
 
   const handleCTA = () => {
     const text = encodeURIComponent("Hi, I want to get wholesale pricing for pickleballs.");
+    trackCTAClick("Navbar_CTA");
+    trackWhatsAppOpen("Navbar_CTA");
     window.open(`https://wa.me/8618666680913?text=${text}`, "_blank");
   };
 

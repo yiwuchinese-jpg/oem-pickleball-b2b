@@ -7,6 +7,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { motion } from "framer-motion";
 import MagneticButton from "./MagneticButton";
 import { ShieldCheck, Truck, MoveRight } from "lucide-react";
+import { trackCTAClick, trackWhatsAppOpen } from "@/lib/analytics";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -83,6 +84,7 @@ export default function Hero() {
   return (
     <section
       ref={containerRef}
+      data-track-section="Hero"
       className="relative w-full flex flex-col items-center justify-start overflow-hidden bg-background pt-[10vh] pb-[5vh]"
     >
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--color-neon)_0%,_transparent_60%)] opacity-10 pointer-events-none" />
@@ -209,6 +211,8 @@ export default function Hero() {
       >
         <MagneticButton onClick={() => {
           const text = encodeURIComponent("Hi, I saw your pickleball ad, I want to get wholesale pricing...");
+          trackCTAClick("Hero_CTA");
+          trackWhatsAppOpen("Hero_CTA");
           window.open(`https://wa.me/8618666680913?text=${text}`, "_blank");
         }}>
           <div className="flex items-center gap-3 bg-neon text-black px-8 md:px-10 py-4 md:py-5 rounded-full font-black text-lg md:text-xl hover:bg-white transition-colors shadow-[0_0_40px_rgba(57,255,20,0.3)]">
