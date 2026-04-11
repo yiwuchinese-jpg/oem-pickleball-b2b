@@ -12,13 +12,13 @@ const montserrat = Montserrat({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://pickleball-b2b.vercel.app'),
+  metadataBase: new URL('https://pickleoem.com'),
   title: "OEM Pickleball Factory | Direct Wholesale & Custom Paddles",
   description: "Direct China factory for premium USAPA approved pickleball paddles and balls. Roto-molded manufacturing, custom OEM/ODM designs. DDP Shipping worldwide.",
   openGraph: {
     title: "OEM Pickleball Factory | Direct Wholesale",
     description: "Premium USAPA approved pickleball paddles and balls. Direct from China.",
-    url: "https://yourdomain.com",
+    url: "https://pickleoem.com",
     siteName: "Pickleball B2B Supply",
     images: [
       {

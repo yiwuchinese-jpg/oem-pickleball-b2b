@@ -3,6 +3,7 @@
 import dynamic from "next/dynamic";
 import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
+import SiteNavSection from "@/components/SiteNavSection";
 
 // Lazy-load all below-the-fold heavy components
 const VideoWall = dynamic(() => import("@/components/VideoWall"), {
@@ -26,6 +27,7 @@ export default function Home() {
       <VideoWall />
       <ProductShowcase />
       <PriceAdvantage />
+      <SiteNavSection />
       <Testimonials />
       <HowItWorks />
       <Footer />
