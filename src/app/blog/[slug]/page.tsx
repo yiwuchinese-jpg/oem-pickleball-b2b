@@ -1,27 +1,18 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import BlogPostClient from "./BlogPostClient";
+import { client } from "@/sanity/lib/client";
 
-const POSTS: Record<string, { title: string; description: string }> = {
-  "how-to-find-oem-pickleball-factory": {
-    title: "How to Find a Reliable OEM Pickleball Factory in China (2025 Guide)",
-    description:
-      "Most buyers waste months switching factories. Here's the exact checklist our 300+ global clients use to verify quality, MOQ, and DDP shipping before placing their first order.",
-  },
-  "philippines-pickleball-market-2025": {
-    title: "Philippines Pickleball Market 2025: 18,000 Players, 277 Clubs & Where to Find Buyers",
-    description:
-      "The Philippines is Southeast Asia's fastest-growing pickleball market. We break down player demographics, club locations, and the wholesale opportunity for distributors right now.",
-  },
-  "roto-molded-vs-injection-molded-pickleball": {
-    title: "Roto-Molded vs. Injection-Molded Pickleballs: Why It Matters for Your Brand",
-    description:
-      "The manufacturing method changes everything — bounce, durability, price, and USAPA compliance. Here's how to choose the right process for your OEM order.",
-  },
-};
+export const revalidate = 60; // 缓存 60 秒
 
 export async function generateStaticParams() {
-  return Object.keys(POSTS).map((slug) => ({ slug }));
+  try {
+    const slugs = await client.fetch(`*[_type == "post" && defined(slug.current)][].slug.current`);
+    return slugs.map((slug: string) => ({ slug }));
+  } catch (error) {
+    console.error('Sanity connection failed during build, safe fallback.', error);
+    return [];
+  }
 }
 
 export async function generateMetadata({
@@ -30,15 +21,36 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const post = POSTS[slug];
+  let post = null;
+  try {
+    post = await client.fetch(`*[_type == "post" && slug.current == $slug][0] {
+      seoTitle,
+      title,
+      seoDescription,
+      description,
+      "coverUrl": mainImage.asset->url
+    }`, { slug });
+  } catch (e) {}
+
   if (!post) return {};
+  
+  const metaTitle = post.seoTitle || post.title || 'OEM Pickleball Blog';
+  const metaDesc = post.seoDescription || post.description || '';
+
   return {
-    title: `${post.title} | OEM Pickleball Blog`,
-    description: post.description,
+    title: metaTitle,
+    description: metaDesc,
     openGraph: {
-      title: post.title,
-      description: post.description,
-      url: `https://pickleoem.com/blog/${slug}`,
+      title: metaTitle,
+      description: metaDesc,
+      type: "article",
+      images: post.coverUrl ? [{ url: post.coverUrl }] : [],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: metaTitle,
+      description: metaDesc,
+      images: post.coverUrl ? [post.coverUrl] : [],
     },
   };
 }
@@ -49,6 +61,18 @@ export default async function BlogPostPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  if (!POSTS[slug]) notFound();
-  return <BlogPostClient slug={slug} />;
+  let post = null;
+  
+  try {
+    post = await client.fetch(`*[_type == "post" && slug.current == $slug][0] {
+      title,
+      htmlContent,
+      description,
+      "coverUrl": mainImage.asset->url,
+      publishedAt
+    }`, { slug });
+  } catch(e) {}
+
+  if (!post) notFound();
+  return <BlogPostClient post={post} />;
 }

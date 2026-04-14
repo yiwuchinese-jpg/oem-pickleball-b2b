@@ -7,43 +7,19 @@ import { ArrowRight, Clock, Tag } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
-const POSTS = [
-  {
-    slug: "how-to-find-oem-pickleball-factory",
-    title: "How to Find a Reliable OEM Pickleball Factory in China (2025 Guide)",
-    excerpt:
-      "Most buyers waste months switching factories. Here's the exact checklist our 300+ global clients use to verify quality, MOQ, and DDP shipping before placing their first order.",
-    cover: "/gallery/gallery_17.jpg",
-    date: "April 10, 2026",
-    readTime: "8 min read",
-    tag: "Sourcing Guide",
-    tagColor: "text-neon bg-neon/10 border-neon/30",
-  },
-  {
-    slug: "philippines-pickleball-market-2025",
-    title: "Philippines Pickleball Market 2025: 18,000 Players, 277 Clubs & Where to Find Buyers",
-    excerpt:
-      "The Philippines is Southeast Asia's fastest-growing pickleball market. We break down player demographics, club locations, and the wholesale opportunity for distributors right now.",
-    cover: "/gallery/gallery_12.jpg",
-    date: "April 5, 2026",
-    readTime: "6 min read",
-    tag: "Market Intelligence",
-    tagColor: "text-orange-400 bg-orange-400/10 border-orange-400/30",
-  },
-  {
-    slug: "roto-molded-vs-injection-molded-pickleball",
-    title: "Roto-Molded vs. Injection-Molded Pickleballs: Why It Matters for Your Brand",
-    excerpt:
-      "The manufacturing method changes everything — bounce, durability, price, and USAPA compliance. Here's how to choose the right process for your OEM order.",
-    cover: "/gallery/gallery_8.jpg",
-    date: "March 28, 2026",
+export default function BlogClient({ initialPosts }: { initialPosts?: any[] }) {
+  // 结合默认展示数据和动态来自 Sanity 的数据
+  const posts = initialPosts && initialPosts.length > 0 ? initialPosts.map((p, i) => ({
+    slug: p.slug,
+    title: p.title,
+    excerpt: p.description || "Click to read more about this topic.",
+    cover: p.coverUrl || "/gallery/gallery_17.jpg",
+    date: p.publishedAt ? new Date(p.publishedAt).toLocaleDateString("en-US", { month: 'long', day: 'numeric', year: 'numeric' }) : "Recently",
     readTime: "5 min read",
-    tag: "Product Knowledge",
-    tagColor: "text-blue-400 bg-blue-400/10 border-blue-400/30",
-  },
-];
+    tag: i % 2 === 0 ? "Market Insights" : "Industry News",
+    tagColor: i % 2 === 0 ? "text-neon bg-neon/10 border-neon/30" : "text-blue-400 bg-blue-400/10 border-blue-400/30",
+  })) : [];
 
-export default function BlogClient() {
   return (
     <>
       <Navbar />
@@ -73,7 +49,7 @@ export default function BlogClient() {
 
         {/* Post Grid */}
         <div className="max-w-6xl mx-auto px-5 md:px-8 grid grid-cols-1 md:grid-cols-3 gap-7">
-          {POSTS.map((post, i) => (
+          {posts.map((post, i) => (
             <motion.article
               key={post.slug}
               initial={{ opacity: 0, y: 32 }}
