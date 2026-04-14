@@ -12,6 +12,7 @@ const NAV_LINKS = [
   { label: "OEM & Custom", href: "/oem" },
   { label: "About Factory", href: "/about" },
   { label: "Market Insights", href: "/market" },
+  { label: "Blog", href: "/blog" }
 ];
 
 export default function Navbar() {

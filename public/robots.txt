@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+
+# Disallow admin/api paths
+Disallow: /api/
+Disallow: /_next/
+
+# Sitemap location
+Sitemap: https://pickleoem.com/sitemap.xml

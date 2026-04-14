@@ -24,6 +24,24 @@ body {
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  /* Mobile: prevent elastic bounce causing fake scroll-lock feel */
+  overscroll-behavior-y: none;
+}
+
+/* Remove tap highlight on mobile */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* All marquee strips must not swallow vertical touch */
+[style*="animation"] {
+  touch-action: pan-y;
+}
+
+/* Smooth momentum scrolling on iOS */
+html {
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: auto; /* Let Lenis handle smoothness */
 }
 
 /* GSAP Scroll Bar Hiding */
@@ -39,4 +57,16 @@ body {
 }
 ::-webkit-scrollbar-thumb:hover {
   background: #555;
+}
+
+/* Marquee infinite scroll animation (photo gallery) */
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+/* Marquee infinite scroll animation (video wall) */
+@keyframes marquee-video {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
 }

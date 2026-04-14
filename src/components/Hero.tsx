@@ -101,53 +101,55 @@ export default function Hero() {
 
       {/* ── MOBILE LAYOUT ── */}
       {isMobile ? (
-        <div className="flex flex-col items-center w-full px-5 mt-6 gap-5">
-          {/* Ball */}
-          <div ref={ballScrollRef}>
-            <div ref={ballLoadRef} className="rounded-full shadow-[0_0_80px_rgba(57,255,20,0.3)] bg-black" style={{ clipPath: "circle(48% at 50% 50%)" }}>
-              <Image
-                src="/pickleball.png"
-                alt="Premium Pickleball"
-                width={280}
-                height={280}
-                className="w-[220px] object-contain filter brightness-110 contrast-125"
-                priority
-              />
-            </div>
+        <div className="flex flex-col items-center w-full px-5 mt-4 gap-4">
+          {/* Ball — no parallax on mobile */}
+          <div ref={ballLoadRef} className="rounded-full shadow-[0_0_80px_rgba(57,255,20,0.3)] bg-black" style={{ clipPath: "circle(48% at 50% 50%)" }}>
+            <Image
+              src="/pickleball.png"
+              alt="Premium Pickleball"
+              width={240}
+              height={240}
+              className="w-[200px] object-contain filter brightness-110 contrast-125"
+              priority
+            />
           </div>
 
-          {/* Tags grid below ball */}
-          <div className="grid grid-cols-2 gap-3 w-full max-w-sm">
+          {/* Tags — clean 2-col grid, no overflow */}
+          <div className="grid grid-cols-2 gap-2.5 w-full">
+            {/* Factory Price — full width */}
             <motion.div
-              initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.8 }}
-              className="bg-background/90 border border-neon/50 px-4 py-3 rounded-2xl shadow-[0_0_20px_rgba(57,255,20,0.1)] col-span-2"
+              initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }}
+              className="col-span-2 bg-background border border-neon/50 px-5 py-3.5 rounded-2xl shadow-[0_0_20px_rgba(57,255,20,0.1)]"
             >
               <span className="text-[10px] font-bold text-gray-400 block mb-0.5 uppercase tracking-wider">Factory Price</span>
               <span className="text-3xl font-black text-white">Only $0.20<span className="text-base text-neon">/pc</span></span>
             </motion.div>
 
+            {/* MOQ */}
             <motion.div
-              initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1.0 }}
+              initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.8 }}
               className="bg-[#0b1120] border border-white/20 px-3 py-3 rounded-2xl flex items-center gap-2"
             >
               <div className="w-2 h-2 rounded-full bg-neon animate-pulse flex-shrink-0" />
-              <span className="text-sm font-bold text-white">MOQ 1000 pcs</span>
+              <span className="text-sm font-bold text-white">MOQ 1,000</span>
             </motion.div>
 
+            {/* China Direct */}
             <motion.div
-              initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1.1 }}
+              initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.9 }}
               className="bg-[#0b1120] border border-white/20 px-3 py-3 rounded-2xl flex items-center gap-2"
             >
               <ShieldCheck className="text-neon w-4 h-4 flex-shrink-0" />
               <span className="text-sm font-bold text-white">China Direct</span>
             </motion.div>
 
+            {/* DDP Shipping — full width */}
             <motion.div
-              initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1.2 }}
-              className="bg-[#0b1120] border border-white/20 px-3 py-3 rounded-2xl flex items-center gap-2 col-span-2"
+              initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1.0 }}
+              className="col-span-2 bg-[#0b1120] border border-white/20 px-3 py-3 rounded-2xl flex items-center gap-2"
             >
               <Truck className="text-neon w-4 h-4 flex-shrink-0" />
-              <span className="text-sm font-bold text-white">DDP Shipping Available Worldwide</span>
+              <span className="text-sm font-bold text-white">DDP Shipping — Door to Door Worldwide</span>
             </motion.div>
           </div>
         </div>

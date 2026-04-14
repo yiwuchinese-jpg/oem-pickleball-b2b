@@ -1,81 +1,28 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { gsap } from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { motion } from "framer-motion";
 
-gsap.registerPlugin(ScrollTrigger);
+const factoryVideos = [
+  { id: 1, src: "/videos/5.mp4", title: "Factory Production Line" },
+  { id: 2, src: "/videos/7.mp4", title: "Roto-Molding Quality Check" },
+  { id: 3, src: "/videos/3.mp4", title: "PPA Pro Tournament Play" },
+  { id: 4, src: "/videos/4.mp4", title: "Live Matches & Testing" },
+  { id: 5, src: "/videos/1.mp4", title: "Court Dynamics Analysis" },
+  { id: 6, src: "/videos/2.mp4", title: "Pro Match Strategy" },
+  { id: 7, src: "/videos/6.mp4", title: "Premium Brand Evaluation" },
+];
+
+// Double the array for seamless infinite loop
+const doubled = [...factoryVideos, ...factoryVideos];
 
 export default function VideoWall() {
-  const sectionRef = useRef<HTMLElement>(null);
-  const scrollTrackRef = useRef<HTMLDivElement>(null);
-  const [isMobile, setIsMobile] = useState(false);
-
-  const factoryVideos = [
-    { id: 1, src: "/videos/5.mp4", title: "Factory Production Line" },
-    { id: 2, src: "/videos/7.mp4", title: "Roto-Molding Quality Check" },
-    { id: 3, src: "/videos/3.mp4", title: "PPA Pro Tournament Play" },
-    { id: 4, src: "/videos/4.mp4", title: "Live Matches & Testing" },
-    { id: 5, src: "/videos/1.mp4", title: "Court Dynamics Analysis" },
-    { id: 6, src: "/videos/2.mp4", title: "Pro Match Strategy" },
-    { id: 7, src: "/videos/6.mp4", title: "Premium Brand Evaluation" },
-  ];
-
-  useEffect(() => {
-    const mobile = window.innerWidth < 768;
-    setIsMobile(mobile);
-    if (mobile) return;
-
-    let ctx: ReturnType<typeof gsap.context> | null = null;
-
-    // Wait for layout to fully settle after dynamic import
-    const timer = setTimeout(() => {
-      if (!sectionRef.current || !scrollTrackRef.current) return;
-
-      const scrollWidth =
-        scrollTrackRef.current.scrollWidth - window.innerWidth;
-
-      if (scrollWidth <= 0) return;
-
-      ctx = gsap.context(() => {
-        gsap.to(scrollTrackRef.current, {
-          x: -scrollWidth,
-          ease: "none",
-          scrollTrigger: {
-            trigger: sectionRef.current,
-            pin: true,
-            scrub: 1,
-            start: "top top",
-            end: () => `+=${scrollWidth}`,
-            anticipatePin: 1,
-            invalidateOnRefresh: true,
-          },
-        });
-      }, sectionRef);
-    }, 500); // Slightly after SmoothScroll's 600ms refresh
-
-    // ✅ Correct: cleanup runs at useEffect level, not inside setTimeout
-    return () => {
-      clearTimeout(timer);
-      ctx?.revert();
-    };
-  }, []);
-
   return (
     <section
-      ref={sectionRef}
-      className="bg-[#050505] border-t border-white/5"
-      style={{ height: isMobile ? "auto" : "100vh", overflow: "hidden" }}
+      className="bg-[#050505] border-t border-white/5 py-16 overflow-hidden"
+      data-track-section="VideoWall"
     >
-      {/* Header — normal flow on mobile, absolute on desktop */}
-      <div
-        className={
-          isMobile
-            ? "px-6 pt-12 pb-6"
-            : "absolute top-16 left-16 xl:left-24 z-20 pointer-events-none"
-        }
-      >
+      {/* Header */}
+      <div className="px-6 md:px-16 mb-10">
         <motion.h2
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -89,26 +36,31 @@ export default function VideoWall() {
         </p>
       </div>
 
-      {/* Scroll track */}
+      {/* Marquee strip — hover to pause */}
       <div
-        ref={scrollTrackRef}
-        className={
-          isMobile
-            ? "flex gap-5 px-6 pb-8 overflow-x-auto snap-x snap-mandatory"
-            : "flex items-center h-full gap-10 px-16 xl:px-24 pt-[18vh]"
-        }
-        style={isMobile ? { scrollbarWidth: "none" } : {}}
+        className="flex gap-6 w-max"
+        style={{
+          animation: "marquee-video 40s linear infinite",
+          touchAction: "pan-y",  /* ← 纵向触摸穿透给页面滚动 */
+        }}
+        onMouseEnter={(e) => {
+          (e.currentTarget as HTMLDivElement).style.animationPlayState = "paused";
+        }}
+        onMouseLeave={(e) => {
+          (e.currentTarget as HTMLDivElement).style.animationPlayState = "running";
+        }}
       >
-        {factoryVideos.map((video, idx) => (
+        {doubled.map((video, idx) => (
           <div
-            key={video.id}
+            key={idx}
             className={[
               "relative flex-shrink-0 rounded-3xl overflow-hidden",
               "border border-white/10 hover:border-neon/50",
               "bg-[#09090b] transition-colors duration-500 shadow-xl group",
-              isMobile
-                ? "w-[72vw] snap-center aspect-[9/16]"
-                : `w-[22vw] max-w-[340px] aspect-[9/16] ${idx % 2 === 0 ? "mt-16" : "-mt-16"}`,
+              // Alternate tall/short for staggered look
+              idx % 2 === 0
+                ? "w-[220px] md:w-[280px] h-[380px] md:h-[480px]"
+                : "w-[220px] md:w-[280px] h-[310px] md:h-[400px] mt-12",
             ].join(" ")}
           >
             <video
@@ -120,49 +72,36 @@ export default function VideoWall() {
               className="absolute inset-0 w-full h-full object-cover"
               src={video.src}
             />
-            <div className="absolute bottom-0 left-0 right-0 p-4 md:p-6 z-10 bg-gradient-to-t from-black via-black/50 to-transparent">
-              <span className="text-neon text-xs font-mono font-bold tracking-widest mb-1 block">
+            {/* Overlay */}
+            <div className="absolute bottom-0 left-0 right-0 p-4 md:p-5 z-10 bg-gradient-to-t from-black via-black/40 to-transparent">
+              <span className="text-neon text-[10px] font-mono font-bold tracking-widest mb-1 block">
                 CAM_0{video.id} // LIVE
               </span>
-              <h3 className="text-white text-sm md:text-xl font-bold uppercase">
+              <h3 className="text-white text-xs md:text-sm font-bold uppercase leading-tight">
                 {video.title}
               </h3>
             </div>
-            <div className="absolute inset-0 bg-neon/0 group-hover:bg-neon/10 transition-colors pointer-events-none" />
+            <div className="absolute inset-0 bg-neon/0 group-hover:bg-neon/5 transition-colors pointer-events-none" />
           </div>
         ))}
+      </div>
 
-        {/* End CTA */}
-        <div
-          className={
-            isMobile
-              ? "flex-shrink-0 w-[72vw] snap-center flex flex-col justify-center py-10 px-4"
-              : "flex-shrink-0 w-[28vw] max-w-[420px] h-full flex flex-col justify-center pl-8"
-          }
-        >
-          <h3 className="text-3xl md:text-4xl font-black text-white leading-tight">
-            Want to see
-            <br />
-            more details?
-          </h3>
-          <p className="text-gray-400 mt-4 text-base md:text-xl">
-            Schedule a live video tour with our sales team.
-          </p>
-          <button
-            onClick={() => {
-              const text = encodeURIComponent(
-                "Hi, I want to book a live factory video tour."
-              );
-              window.open(
-                `https://wa.me/8618666680913?text=${text}`,
-                "_blank"
-              );
-            }}
-            className="mt-8 bg-neon text-black px-8 py-4 rounded-full font-bold self-start shadow-[0_0_20px_rgba(57,255,20,0.4)] hover:shadow-[0_0_40px_rgba(57,255,20,0.6)] hover:bg-white transition-all whitespace-nowrap"
-          >
-            Book Factory Tour
-          </button>
+      {/* Bottom CTA */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 px-6 md:px-16 mt-12">
+        <div>
+          <h3 className="text-xl md:text-2xl font-black text-white">Want a live factory tour?</h3>
+          <p className="text-gray-400 text-sm mt-1">Schedule a video call with our sales team.</p>
         </div>
+        <button
+          id="videowall-cta-whatsapp"
+          onClick={() => {
+            const text = encodeURIComponent("Hi, I want to book a live factory video tour.");
+            window.open(`https://wa.me/8618666680913?text=${text}`, "_blank");
+          }}
+          className="flex-shrink-0 bg-neon text-black px-7 py-3 rounded-full font-bold text-sm shadow-[0_0_20px_rgba(57,255,20,0.4)] hover:bg-white hover:shadow-[0_0_40px_rgba(57,255,20,0.6)] transition-all whitespace-nowrap"
+        >
+          Book Factory Tour
+        </button>
       </div>
     </section>
   );

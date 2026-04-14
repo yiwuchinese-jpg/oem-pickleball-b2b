@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Montserrat } from "next/font/google";
 import Script from "next/script";
-import SmoothScroll from "@/components/SmoothScroll";
 import Analytics from "@/components/Analytics";
 import "./globals.css";
 
@@ -62,9 +61,7 @@ export default function RootLayout({
         </noscript>
       </head>
       <body className="min-h-full flex flex-col bg-background text-foreground selection:bg-neon selection:text-black">
-        <SmoothScroll>
-          {children}
-        </SmoothScroll>
+        {children}
         {/* 滚动深度 & 板块曝光 & 停留时间追踪器（无UI渲染）*/}
         <Analytics />
       </body>

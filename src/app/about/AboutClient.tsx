@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { motion } from "framer-motion";
 import {
   ShieldCheck, Thermometer, Weight, Award, Factory,
@@ -188,29 +189,48 @@ export default function AboutClient() {
 
       {/* ── Factory Timeline ── */}
       <section className="py-24 px-4">
-        <div className="max-w-3xl mx-auto">
+        <div className="max-w-6xl mx-auto">
           <h2 className="text-4xl font-black text-white uppercase text-center mb-16">
-            Our <span className="text-neon">Story</span>
+            Our <span className="text-neon">Story</span> & Real Factory
           </h2>
-          <div className="relative">
-            <div className="absolute left-[18px] md:left-[22px] top-0 bottom-0 w-px bg-gradient-to-b from-neon via-neon/30 to-transparent" />
-            <div className="space-y-8">
-              {TIMELINE.map((item, i) => (
-                <motion.div
-                  key={item.year}
-                  initial={{ opacity: 0, x: -20 }}
-                  whileInView={{ opacity: 1, x: 0 }}
+          <div className="flex flex-col lg:flex-row gap-12 items-start">
+            {/* Timeline */}
+            <div className="relative flex-1">
+              <div className="absolute left-[18px] md:left-[22px] top-0 bottom-0 w-px bg-gradient-to-b from-neon via-neon/30 to-transparent" />
+              <div className="space-y-8">
+                {TIMELINE.map((item, i) => (
+                  <motion.div
+                    key={item.year}
+                    initial={{ opacity: 0, x: -20 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: i * 0.05 }}
+                    className="flex gap-6 items-start pl-2"
+                  >
+                    <div className="flex-shrink-0 w-9 h-9 bg-neon/10 border-2 border-neon/40 rounded-full flex items-center justify-center relative z-10">
+                      <Clock className="w-4 h-4 text-neon" />
+                    </div>
+                    <div className="bg-white/3 border border-white/5 rounded-2xl px-5 py-4 flex-1">
+                      <span className="text-neon font-black text-sm font-mono">{item.year}</span>
+                      <p className="text-gray-300 mt-1 text-sm leading-relaxed">{item.event}</p>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+
+            {/* Factory Images */}
+            <div className="flex-1 grid grid-cols-2 gap-4 w-full">
+              {["/gallery/gallery_8.jpg", "/gallery/gallery_9.jpg", "/gallery/gallery_5.jpg", "/gallery/gallery_6.jpg", "/gallery/gallery_7.jpg"].map((src, i) => (
+                <motion.div 
+                  key={src}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
-                  transition={{ delay: i * 0.05 }}
-                  className="flex gap-6 items-start pl-2"
+                  transition={{ delay: i * 0.1 }}
+                  className={`relative rounded-2xl overflow-hidden border border-white/10 ${i === 4 ? "col-span-2 aspect-[21/9]" : "aspect-square"}`}
                 >
-                  <div className="flex-shrink-0 w-9 h-9 bg-neon/10 border-2 border-neon/40 rounded-full flex items-center justify-center relative z-10">
-                    <Clock className="w-4 h-4 text-neon" />
-                  </div>
-                  <div className="bg-white/3 border border-white/5 rounded-2xl px-5 py-4 flex-1">
-                    <span className="text-neon font-black text-sm font-mono">{item.year}</span>
-                    <p className="text-gray-300 mt-1 text-sm leading-relaxed">{item.event}</p>
-                  </div>
+                  <Image src={src} alt="Factory Production & Shipping" fill className="object-cover" sizes="(max-width: 1024px) 50vw, 33vw" />
                 </motion.div>
               ))}
             </div>

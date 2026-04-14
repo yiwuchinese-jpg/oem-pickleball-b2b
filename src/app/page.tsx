@@ -15,6 +15,7 @@ const ProductShowcase = dynamic(() => import("@/components/ProductShowcase"), {
   loading: () => <div className="min-h-[120vh] bg-[#050505] border-t border-white/5" />,
 });
 const PriceAdvantage = dynamic(() => import("@/components/PriceAdvantage"), { ssr: false });
+const PhotoGallery = dynamic(() => import("@/components/PhotoGallery"), { ssr: false });
 const Testimonials = dynamic(() => import("@/components/Testimonials"), { ssr: false });
 const HowItWorks = dynamic(() => import("@/components/HowItWorks"), { ssr: false });
 const Footer = dynamic(() => import("@/components/Footer"), { ssr: false });
@@ -24,6 +25,7 @@ export default function Home() {
     <main className="min-h-screen bg-background relative selection:bg-neon selection:text-black">
       <Navbar />
       <Hero />
+      <PhotoGallery />
       <VideoWall />
       <ProductShowcase />
       <PriceAdvantage />

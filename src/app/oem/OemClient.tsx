@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { motion } from "framer-motion";
+import Image from "next/image";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   MessageCircle, CheckCircle2, ChevronDown, ChevronUp,
   Layers, Palette, Package, Globe, Zap, ShieldCheck,
@@ -257,29 +258,54 @@ export default function OemClient() {
               From your first WhatsApp message to goods at your warehouse — here&apos;s exactly how it works.
             </p>
           </div>
-          <div className="space-y-4">
-            {OEM_STEPS.map((step, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, x: -20 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.1 }}
-                className="flex gap-6 bg-background/50 border border-white/5 rounded-2xl p-6 hover:border-neon/20 transition-colors group"
-              >
-                <div className="flex-shrink-0 w-14 h-14 bg-neon/10 border border-neon/20 rounded-2xl flex items-center justify-center group-hover:bg-neon/20 transition-colors">
-                  <step.icon className="w-6 h-6 text-neon" />
-                </div>
-                <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-2">
-                    <span className="text-neon font-black text-sm font-mono">{step.num}</span>
-                    <h3 className="text-lg font-bold text-white">{step.title}</h3>
+          <div className="flex flex-col lg:flex-row gap-12 items-start">
+            <div className="space-y-4 flex-1">
+              {OEM_STEPS.map((step, i) => (
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, x: -20 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: i * 0.1 }}
+                  className="flex gap-6 bg-background/50 border border-white/5 rounded-2xl p-6 hover:border-neon/20 transition-colors group"
+                >
+                  <div className="flex-shrink-0 w-14 h-14 bg-neon/10 border border-neon/20 rounded-2xl flex items-center justify-center group-hover:bg-neon/20 transition-colors">
+                    <step.icon className="w-6 h-6 text-neon" />
                   </div>
-                  <p className="text-gray-400 mb-2">{step.desc}</p>
-                  <p className="text-gray-600 text-sm italic">{step.detail}</p>
-                </div>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3 mb-2">
+                      <span className="text-neon font-black text-sm font-mono">{step.num}</span>
+                      <h3 className="text-lg font-bold text-white">{step.title}</h3>
+                    </div>
+                    <p className="text-gray-400 mb-2">{step.desc}</p>
+                    <p className="text-gray-600 text-sm italic">{step.detail}</p>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+            
+            {/* Real Process Images */}
+            <div className="flex-1 space-y-6 w-full sticky top-24">
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                className="relative aspect-video rounded-3xl overflow-hidden border border-white/10"
+              >
+                <Image src="/gallery/gallery_13.jpg" alt="Thermoforming Process" fill className="object-cover" sizes="(max-width: 1024px) 100vw, 50vw" />
+                <div className="absolute top-4 left-4 bg-black/60 backdrop-blur-md px-3 py-1 rounded-full text-xs font-bold text-white border border-white/20">🏭 Real Production Line</div>
               </motion.div>
-            ))}
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.2 }}
+                className="relative aspect-video rounded-3xl overflow-hidden border border-white/10"
+              >
+                <Image src="/gallery/gallery_14.jpg" alt="Carbon Fiber Raw Material" fill className="object-cover" sizes="(max-width: 1024px) 100vw, 50vw" />
+                <div className="absolute top-4 left-4 bg-black/60 backdrop-blur-md px-3 py-1 rounded-full text-xs font-bold text-white border border-white/20">📦 Custom Packaging</div>
+              </motion.div>
+            </div>
           </div>
         </div>
       </section>

@@ -341,6 +341,27 @@ export default function ProductsClient() {
               ))}
             </div>
           </div>
+          
+          {/* Real Showcase Grid */}
+          <div className="mt-12 grid grid-cols-2 md:grid-cols-4 gap-4">
+            {[1, 2, 3, 4].map((num, i) => (
+              <motion.div
+                key={num}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.1 + 0.2 }}
+                className="relative aspect-[4/3] rounded-2xl overflow-hidden border border-white/10 shadow-lg"
+              >
+                <Image 
+                  src={`/gallery/gallery_${num}.jpg`}
+                  alt={`Real Pickleball Product ${num}`}
+                  fill
+                  className="object-cover hover:scale-105 transition-transform duration-500"
+                  sizes="(max-width: 768px) 50vw, 25vw"
+                />
+              </motion.div>
+            ))}
+          </div>
         </div>
       </section>
 
