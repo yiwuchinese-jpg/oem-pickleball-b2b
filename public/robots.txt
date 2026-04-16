@@ -3,7 +3,7 @@ Allow: /
 
 # Disallow admin/api paths
 Disallow: /api/
-Disallow: /_next/
+Disallow: /studio/
 
 # Sitemap location
 Sitemap: https://pickleoem.com/sitemap.xml

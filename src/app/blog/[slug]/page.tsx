@@ -36,21 +36,26 @@ export async function generateMetadata({
   
   const metaTitle = post.seoTitle || post.title || 'OEM Pickleball Blog';
   const metaDesc = post.seoDescription || post.description || '';
+  const coverUrl = post.coverUrl || '/og-image.jpg';
 
   return {
     title: metaTitle,
     description: metaDesc,
+    alternates: {
+      canonical: `https://pickleoem.com/blog/${slug}`,
+    },
     openGraph: {
       title: metaTitle,
       description: metaDesc,
       type: "article",
-      images: post.coverUrl ? [{ url: post.coverUrl }] : [],
+      url: `https://pickleoem.com/blog/${slug}`,
+      images: [{ url: coverUrl, width: 1200, height: 630 }],
     },
     twitter: {
       card: "summary_large_image",
       title: metaTitle,
       description: metaDesc,
-      images: post.coverUrl ? [post.coverUrl] : [],
+      images: [coverUrl],
     },
   };
 }
@@ -74,5 +79,42 @@ export default async function BlogPostPage({
   } catch(e) {}
 
   if (!post) notFound();
-  return <BlogPostClient post={post} />;
+
+  // Article JSON-LD 结构化数据
+  const articleSchema = {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    headline: post.title,
+    description: post.description || '',
+    image: post.coverUrl || 'https://pickleoem.com/og-image.jpg',
+    datePublished: post.publishedAt,
+    dateModified: post.publishedAt,
+    author: {
+      "@type": "Organization",
+      name: "OEM Pickleball Factory",
+      url: "https://pickleoem.com",
+    },
+    publisher: {
+      "@type": "Organization",
+      name: "OEM Pickleball Factory",
+      logo: {
+        "@type": "ImageObject",
+        url: "https://pickleoem.com/og-image.jpg",
+      },
+    },
+    mainEntityOfPage: {
+      "@type": "WebPage",
+      "@id": `https://pickleoem.com/blog/${slug}`,
+    },
+  };
+
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }}
+      />
+      <BlogPostClient post={post} />
+    </>
+  );
 }

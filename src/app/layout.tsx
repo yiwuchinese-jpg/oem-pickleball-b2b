@@ -4,16 +4,20 @@ import Script from "next/script";
 import Analytics from "@/components/Analytics";
 import "./globals.css";
 
+// 精简字重：只加载实际使用的 4 个字重，减少网络请求
 const montserrat = Montserrat({
   variable: "--font-montserrat",
   subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700", "800", "900"],
+  weight: ["400", "600", "700", "900"],
 });
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://pickleoem.com'),
   title: "OEM Pickleball Factory | Direct Wholesale & Custom Paddles",
   description: "Direct China factory for premium USAPA approved pickleball paddles and balls. Roto-molded manufacturing, custom OEM/ODM designs. DDP Shipping worldwide.",
+  alternates: {
+    canonical: "https://pickleoem.com",
+  },
   openGraph: {
     title: "OEM Pickleball Factory | Direct Wholesale",
     description: "Premium USAPA approved pickleball paddles and balls. Direct from China.",
@@ -30,6 +34,37 @@ export const metadata: Metadata = {
     locale: "en_PH",
     type: "website",
   },
+  twitter: {
+    card: "summary_large_image",
+    title: "OEM Pickleball Factory | Direct Wholesale",
+    description: "Premium USAPA approved pickleball paddles and balls. Direct from China.",
+    images: ["/og-image.jpg"],
+  },
+};
+
+// Organization JSON-LD 结构化数据
+const organizationSchema = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  name: "OEM Pickleball Factory",
+  url: "https://pickleoem.com",
+  logo: "https://pickleoem.com/og-image.jpg",
+  description: "Direct China factory for premium USAPA approved pickleball paddles and balls.",
+  contactPoint: {
+    "@type": "ContactPoint",
+    telephone: "+86-18666680913",
+    contactType: "sales",
+    availableLanguage: ["English", "Chinese"],
+  },
+  address: {
+    "@type": "PostalAddress",
+    addressLocality: "Yiwu",
+    addressRegion: "Zhejiang",
+    addressCountry: "CN",
+  },
+  sameAs: [
+    "https://wa.me/8618666680913",
+  ],
 };
 
 export default function RootLayout({
@@ -40,6 +75,11 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${montserrat.variable} h-full antialiased dark scroll-smooth`}>
       <head>
+        {/* Organization 结构化数据 */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
+        />
         {/* Facebook Pixel — ID: 1461017509091314 */}
         <Script id="fb-pixel" strategy="afterInteractive">
           {`
