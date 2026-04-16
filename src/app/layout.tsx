@@ -78,6 +78,8 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${montserrat.variable} h-full antialiased dark scroll-smooth`}>
       <head>
+        {/* WordPress REST API Discovery Link (For Evolution 301 bots) */}
+        <link rel="https://api.w.org/" href="https://pickleoem.com/api/wp-json/" />
         {/* Organization 结构化数据 */}
         <script
           type="application/ld+json"
