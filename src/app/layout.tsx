@@ -15,6 +15,9 @@ export const metadata: Metadata = {
   metadataBase: new URL('https://pickleoem.com'),
   title: "OEM Pickleball Factory | Direct Wholesale & Custom Paddles",
   description: "Direct China factory for premium USAPA approved pickleball paddles and balls. Roto-molded manufacturing, custom OEM/ODM designs. DDP Shipping worldwide.",
+  verification: {
+    google: "AbaBVHU6Hc0zfIksBzAc3n9932J916u4Zz9eltnEDzM",
+  },
   alternates: {
     canonical: "https://pickleoem.com",
   },
