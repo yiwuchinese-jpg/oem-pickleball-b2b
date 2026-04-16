@@ -2,7 +2,43 @@ import { NextResponse } from 'next/server';
 import { writeClient } from '@/sanity/lib/write-client';
 import { getCorsHeaders } from '../utils';
 
+import { client } from '@/sanity/lib/client';
+
 export async function OPTIONS() { return NextResponse.json({}, { headers: getCorsHeaders() }); }
+
+export async function GET() {
+  try {
+    const assets = await client.fetch(`*[_type == "sanity.imageAsset"] | order(_createdAt desc)[0...50] {
+      _id,
+      _createdAt,
+      url,
+      originalFilename,
+      title,
+      description,
+      altText
+    }`);
+
+    const mapped = assets.map((asset: any, index: number) => ({
+      id: parseInt(asset.title) || (index + 1),
+      date: asset._createdAt,
+      slug: asset.originalFilename || `image-${index}`,
+      type: 'attachment',
+      link: asset.url,
+      title: { rendered: asset.originalFilename || 'Image' },
+      caption: { rendered: asset.description || '' },
+      alt_text: asset.altText || '',
+      source_url: asset.url,
+      media_type: 'image',
+      mime_type: 'image/jpeg',
+    }));
+
+    return NextResponse.json(mapped, { status: 200, headers: getCorsHeaders() });
+  } catch {
+    return NextResponse.json([], { status: 200, headers: getCorsHeaders() });
+  }
+}
+
+
 
 export async function POST(request: Request) {
   try {
