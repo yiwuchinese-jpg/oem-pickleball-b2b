@@ -15,6 +15,7 @@ const PriceAdvantage = dynamic(() => import("@/components/PriceAdvantage"), { ss
 const PhotoGallery = dynamic(() => import("@/components/PhotoGallery"), { ssr: false });
 const Testimonials = dynamic(() => import("@/components/Testimonials"), { ssr: false });
 const HowItWorks = dynamic(() => import("@/components/HowItWorks"), { ssr: false });
+const SiteNavSection = dynamic(() => import("@/components/SiteNavSection"), { ssr: false });
 const Footer = dynamic(() => import("@/components/Footer"), { ssr: false });
 
 export default function BelowFold() {
@@ -26,6 +27,7 @@ export default function BelowFold() {
       <PriceAdvantage />
       <Testimonials />
       <HowItWorks />
+      <SiteNavSection />
       <Footer />
     </>
   );
