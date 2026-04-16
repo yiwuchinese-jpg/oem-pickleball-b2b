@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { client } from '@/sanity/lib/client';
-import { getCorsHeaders } from '../../utils';
+import { getCorsHeaders } from '../utils';
 
 export async function OPTIONS() {
   return NextResponse.json({}, { headers: getCorsHeaders() });
