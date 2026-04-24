@@ -42,8 +42,7 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
-    let file: File | null = null;
-    let buffer: Buffer | null = null;
+    let uploadBody: any = null;
     let filename = `upload-${Date.now()}.jpg`;
     let altText = "AI Generated Image";
     let titleFromForm = filename;
@@ -59,23 +58,38 @@ export async function POST(request: Request) {
         return val && typeof val === 'object' && 'arrayBuffer' in val;
       });
       
-      file = fileKey ? formData.get(fileKey) as File : null;
+      const fileEntry = fileKey ? formData.get(fileKey) : null;
 
-      if (file) {
+      if (fileEntry && typeof fileEntry === 'object') {
+        const file = fileEntry as File;
         filename = file.name || filename;
         titleFromForm = filename;
-        buffer = Buffer.from(await file.arrayBuffer());
+        uploadBody = file; // Direct Web File API Object for Sanity client
       }
       
       if (formData.has('alt_text')) altText = formData.get('alt_text') as string || altText;
       if (formData.has('title')) titleFromForm = formData.get('title') as string || titleFromForm;
     } else {
-      buffer = Buffer.from(await request.arrayBuffer());
+      // Raw binary upload
+      const disposition = request.headers.get('content-disposition');
+      if (disposition) {
+         const match = disposition.match(/filename="?([^"]+)"?/);
+         if (match) filename = match[1];
+      }
+      const buffer = Buffer.from(await request.arrayBuffer());
+      uploadBody = buffer;
+      titleFromForm = filename;
     }
 
-    if (!buffer) return NextResponse.json({ message: "No file found" }, { status: 400, headers: getCorsHeaders() });
+    if (!uploadBody) {
+      console.error("[Media API] No file found in request");
+      return NextResponse.json({ message: "No file found" }, { status: 400, headers: getCorsHeaders() });
+    }
 
-    const asset = await writeClient.assets.upload('image', buffer, { filename });
+    console.log(`[Media API] Uploading ${filename} to Sanity...`);
+    const asset = await writeClient.assets.upload('image', uploadBody, { filename });
+    console.log(`[Media API] Upload success: ${asset._id}`);
+
     const numericId = Math.floor(Math.random() * 10000000); 
 
     await writeClient.patch(asset._id).set({
@@ -95,6 +109,7 @@ export async function POST(request: Request) {
     }, { status: 201, headers: getCorsHeaders() });
     
   } catch (error: any) {
-    return NextResponse.json({ message: "Upload failed", error: error.message }, { status: 500, headers: getCorsHeaders() });
+    console.error("[Media API] Upload Error: ", error);
+    return NextResponse.json({ message: "Upload failed", error: error.message || String(error) }, { status: 500, headers: getCorsHeaders() });
   }
 }
