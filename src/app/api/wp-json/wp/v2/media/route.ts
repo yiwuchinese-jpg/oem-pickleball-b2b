@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { writeClient } from '@/sanity/lib/write-client';
 import { getCorsHeaders } from '../utils';
 import { client } from '@/sanity/lib/client';
+import { Buffer } from 'buffer';
 
 export const runtime = 'nodejs'; // 强制使用 Node.js 运行时，确保 Buffer 绝对可用
 
