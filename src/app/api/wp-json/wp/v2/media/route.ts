@@ -69,6 +69,18 @@ export async function POST(request: Request) {
       
       if (formData.has('alt_text')) altText = formData.get('alt_text') as string || altText;
       if (formData.has('title')) titleFromForm = formData.get('title') as string || titleFromForm;
+    } else if (contentType.includes('application/json')) {
+      // 301 客户端可能使用 JSON 发送 Base64 图片
+      const jsonBody = await request.json();
+      const rawData = jsonBody.file || jsonBody.data || jsonBody.image || jsonBody.content;
+      if (rawData) {
+        // 如果包含 data:image/png;base64, 则截取
+        const base64Data = rawData.replace(/^data:image\/\w+;base64,/, "");
+        uploadBuffer = Buffer.from(base64Data, 'base64');
+      }
+      filename = jsonBody.filename || jsonBody.title || filename;
+      titleFromForm = jsonBody.title || filename;
+      altText = jsonBody.alt_text || altText;
     } else {
       // 纯二进制上传，提取 filename
       const disposition = request.headers.get('content-disposition');
@@ -137,6 +149,10 @@ export async function POST(request: Request) {
     
   } catch (error: any) {
     console.error("[Media API] Fatal Upload Error: ", error);
+    try {
+      require('fs').appendFileSync('error.log', new Date().toISOString() + ' ' + (error?.stack || error?.message || String(error)) + '\n');
+    } catch(e) {}
+    
     return NextResponse.json({ 
       code: "rest_upload_sideload_error",
       message: error?.message || "Upload failed", 
