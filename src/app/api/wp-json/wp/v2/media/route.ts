@@ -1,8 +1,9 @@
 import { NextResponse } from 'next/server';
 import { writeClient } from '@/sanity/lib/write-client';
 import { getCorsHeaders } from '../utils';
-
 import { client } from '@/sanity/lib/client';
+
+export const runtime = 'nodejs'; // 强制使用 Node.js 运行时，确保 Buffer 绝对可用
 
 export async function OPTIONS() { return NextResponse.json({}, { headers: getCorsHeaders() }); }
 
@@ -38,11 +39,9 @@ export async function GET() {
   }
 }
 
-
-
 export async function POST(request: Request) {
   try {
-    let uploadBody: any = null;
+    let uploadBuffer: Buffer | null = null;
     let filename = `upload-${Date.now()}.jpg`;
     let altText = "AI Generated Image";
     let titleFromForm = filename;
@@ -52,7 +51,6 @@ export async function POST(request: Request) {
     if (contentType.includes('multipart/form-data')) {
       const formData = await request.formData();
       
-      // Safely find the file regardless of the field name WP uses
       let fileKey = Array.from(formData.keys()).find(k => {
         const val = formData.get(k);
         return val && typeof val === 'object' && 'arrayBuffer' in val;
@@ -64,30 +62,31 @@ export async function POST(request: Request) {
         const file = fileEntry as File;
         filename = file.name || filename;
         titleFromForm = filename;
-        uploadBody = file; // Direct Web File API Object for Sanity client
+        const arrayBuf = await file.arrayBuffer();
+        uploadBuffer = Buffer.from(arrayBuf);
       }
       
       if (formData.has('alt_text')) altText = formData.get('alt_text') as string || altText;
       if (formData.has('title')) titleFromForm = formData.get('title') as string || titleFromForm;
     } else {
-      // Raw binary upload
+      // 纯二进制上传，提取 filename
       const disposition = request.headers.get('content-disposition');
       if (disposition) {
          const match = disposition.match(/filename="?([^"]+)"?/);
          if (match) filename = match[1];
       }
-      const buffer = Buffer.from(await request.arrayBuffer());
-      uploadBody = buffer;
+      const arrayBuf = await request.arrayBuffer();
+      uploadBuffer = Buffer.from(arrayBuf);
       titleFromForm = filename;
     }
 
-    if (!uploadBody) {
-      console.error("[Media API] No file found in request");
-      return NextResponse.json({ message: "No file found" }, { status: 400, headers: getCorsHeaders() });
+    if (!uploadBuffer || uploadBuffer.length === 0) {
+      console.error("[Media API] Upload Failed: Buffer is empty or file not found in request");
+      return NextResponse.json({ message: "No file found or file is empty" }, { status: 400, headers: getCorsHeaders() });
     }
 
-    console.log(`[Media API] Uploading ${filename} to Sanity...`);
-    const asset = await writeClient.assets.upload('image', uploadBody, { filename });
+    console.log(`[Media API] Start uploading ${filename} (${uploadBuffer.length} bytes) to Sanity...`);
+    const asset = await writeClient.assets.upload('image', uploadBuffer, { filename });
     console.log(`[Media API] Upload success: ${asset._id}`);
 
     const numericId = Math.floor(Math.random() * 10000000); 
@@ -109,7 +108,13 @@ export async function POST(request: Request) {
     }, { status: 201, headers: getCorsHeaders() });
     
   } catch (error: any) {
-    console.error("[Media API] Upload Error: ", error);
-    return NextResponse.json({ message: "Upload failed", error: error.message || String(error) }, { status: 500, headers: getCorsHeaders() });
+    console.error("[Media API] Fatal Upload Error: ", error);
+    // 将更详细的错误原因直接暴露在接口中以便调试
+    const errMsg = error?.message || String(error);
+    return NextResponse.json({ 
+      message: "Upload failed", 
+      error: errMsg,
+      stack: error?.stack 
+    }, { status: 500, headers: getCorsHeaders() });
   }
 }
