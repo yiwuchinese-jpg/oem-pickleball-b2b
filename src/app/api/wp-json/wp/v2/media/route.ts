@@ -42,58 +42,117 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
-    // 强制尝试读取 body，但不做任何强解析，以防止 body 太大导致底层抛错被屏蔽
-    try { await request.arrayBuffer(); } catch(e) {}
+    let uploadBuffer: Buffer | null = null;
+    let filename = `upload-${Date.now()}.jpg`;
+    let altText = "AI Generated Image";
+    let titleFromForm = filename;
+
+    const contentType = request.headers.get('content-type') || '';
     
-    // 不管前端传了什么，不管是不是 JSON 还是 multipart，我们统统强制返回成功
-    // 伪造一个 WP 的返回体，这是为了排查究竟是前端路由问题还是我们解析代码问题
-    const mockId = Math.floor(Math.random() * 10000000);
-    const mockUrl = "https://cdn.sanity.io/images/hm6skjpo/production/mock-image.jpg";
-    
+    if (contentType.includes('multipart/form-data')) {
+      const formData = await request.formData();
+      
+      let fileKey = Array.from(formData.keys()).find(k => {
+        const val = formData.get(k);
+        return val && typeof val === 'object' && 'arrayBuffer' in val;
+      });
+      
+      const fileEntry = fileKey ? formData.get(fileKey) : null;
+
+      if (fileEntry && typeof fileEntry === 'object') {
+        const file = fileEntry as File;
+        filename = file.name || filename;
+        titleFromForm = filename;
+        const arrayBuf = await file.arrayBuffer();
+        uploadBuffer = Buffer.from(arrayBuf);
+      }
+      
+      if (formData.has('alt_text')) altText = formData.get('alt_text') as string || altText;
+      if (formData.has('title')) titleFromForm = formData.get('title') as string || titleFromForm;
+    } else if (contentType.includes('application/json')) {
+      const jsonBody = await request.json();
+      const rawData = jsonBody.file || jsonBody.data || jsonBody.image || jsonBody.content;
+      if (rawData) {
+        const base64Data = rawData.replace(/^data:image\/\w+;base64,/, "");
+        uploadBuffer = Buffer.from(base64Data, 'base64');
+      }
+      filename = jsonBody.filename || jsonBody.title || filename;
+      titleFromForm = jsonBody.title || filename;
+      altText = jsonBody.alt_text || altText;
+    } else {
+      const disposition = request.headers.get('content-disposition');
+      if (disposition) {
+         const match = disposition.match(/filename="?([^"]+)"?/);
+         if (match) filename = match[1];
+      }
+      const arrayBuf = await request.arrayBuffer();
+      uploadBuffer = Buffer.from(arrayBuf);
+      titleFromForm = filename;
+    }
+
+    if (!uploadBuffer || uploadBuffer.length === 0) {
+      console.error("[Media API] Upload Failed: Buffer is empty or file not found in request");
+      return NextResponse.json({ message: "No file found or file is empty" }, { status: 400, headers: getCorsHeaders() });
+    }
+
+    console.log(`[Media API] Uploading ${filename} to Sanity...`);
+    const asset = await writeClient.assets.upload('image', uploadBuffer, { filename });
+    console.log(`[Media API] Upload success: ${asset._id}`);
+
+    const numericId = Math.floor(Math.random() * 10000000); 
+
+    await writeClient.patch(asset._id).set({
+      title: numericId.toString(),
+      description: altText,
+      altText: altText
+    }).commit();
+
     return NextResponse.json({
-      id: mockId,
+      id: numericId,
       date: new Date().toISOString(),
       date_gmt: new Date().toISOString(),
-      slug: "mock-test",
+      slug: filename,
       status: "inherit",
       type: "attachment",
-      link: mockUrl,
-      title: { rendered: "mock-test" },
+      link: asset.url,
+      title: { rendered: titleFromForm },
       author: 1,
       comment_status: "closed",
       ping_status: "closed",
       template: "",
       meta: [],
-      description: { rendered: "AI Generated Image" },
+      description: { rendered: altText },
       caption: { rendered: "" },
-      alt_text: "AI Generated Image",
+      alt_text: altText,
       media_type: "image",
       mime_type: "image/jpeg",
       media_details: {
         width: 1024,
         height: 1024,
-        file: "mock-test.jpg",
+        file: filename,
         sizes: {
           full: {
-            file: "mock-test.jpg",
+            file: filename,
             width: 1024,
             height: 1024,
             mime_type: "image/jpeg",
-            source_url: mockUrl
+            source_url: asset.url
           }
         },
         image_meta: {}
       },
-      source_url: mockUrl,
+      source_url: asset.url,
     }, { status: 201, headers: getCorsHeaders() });
     
   } catch (error: any) {
+    console.error("[Media API] Fatal Upload Error: ", error);
     return NextResponse.json({ 
       code: "rest_upload_sideload_error",
       message: error?.message || "Upload failed", 
       data: { status: 500 }
-    }, { status: 200, headers: getCorsHeaders() }); // 就算是这里我们也返回200
+    }, { status: 500, headers: getCorsHeaders() });
   }
 }
+
 
 
