@@ -85,7 +85,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ message: "No file found or file is empty" }, { status: 400, headers: getCorsHeaders() });
     }
 
-    console.log(`[Media API] Start uploading ${filename} (${uploadBuffer.length} bytes) to Sanity...`);
+    console.log(`[Media API] Uploading ${filename} to Sanity...`);
     const asset = await writeClient.assets.upload('image', uploadBuffer, { filename });
     console.log(`[Media API] Upload success: ${asset._id}`);
 
@@ -100,21 +100,47 @@ export async function POST(request: Request) {
     return NextResponse.json({
       id: numericId,
       date: new Date().toISOString(),
+      date_gmt: new Date().toISOString(),
       slug: filename,
+      status: "inherit",
       type: "attachment",
       link: asset.url,
       title: { rendered: titleFromForm },
+      author: 1,
+      comment_status: "closed",
+      ping_status: "closed",
+      template: "",
+      meta: [],
+      description: { rendered: altText },
+      caption: { rendered: "" },
+      alt_text: altText,
+      media_type: "image",
+      mime_type: "image/jpeg",
+      media_details: {
+        width: 1024,
+        height: 1024,
+        file: filename,
+        sizes: {
+          full: {
+            file: filename,
+            width: 1024,
+            height: 1024,
+            mime_type: "image/jpeg",
+            source_url: asset.url
+          }
+        },
+        image_meta: {}
+      },
       source_url: asset.url,
     }, { status: 201, headers: getCorsHeaders() });
     
   } catch (error: any) {
     console.error("[Media API] Fatal Upload Error: ", error);
-    // 将更详细的错误原因直接暴露在接口中以便调试
-    const errMsg = error?.message || String(error);
     return NextResponse.json({ 
-      message: "Upload failed", 
-      error: errMsg,
-      stack: error?.stack 
+      code: "rest_upload_sideload_error",
+      message: error?.message || "Upload failed", 
+      data: { status: 500 }
     }, { status: 500, headers: getCorsHeaders() });
   }
 }
+
