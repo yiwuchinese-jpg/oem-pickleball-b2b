@@ -4,13 +4,23 @@ import { getCorsHeaders } from '../utils';
 import { client } from '@/sanity/lib/client';
 import { Buffer } from 'buffer';
 
-export const runtime = 'nodejs'; // 强制使用 Node.js 运行时，确保 Buffer 绝对可用
+export const runtime = 'nodejs';
+
+function hashString(str: string): number {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash;
+  }
+  return Math.abs(hash);
+}
 
 export async function OPTIONS() { return NextResponse.json({}, { headers: getCorsHeaders() }); }
 
 export async function GET() {
   try {
-    const assets = await client.fetch(`*[_type == "sanity.imageAsset"] | order(_createdAt desc)[0...50] {
+    const assets = await client.fetch(`*[_type == "sanity.imageAsset"] | order(_createdAt desc)[0...100] {
       _id,
       _createdAt,
       url,
@@ -20,19 +30,23 @@ export async function GET() {
       altText
     }`);
 
-    const mapped = assets.map((asset: any, index: number) => ({
-      id: parseInt(asset.title) || (index + 1),
-      date: asset._createdAt,
-      slug: asset.originalFilename || `image-${index}`,
-      type: 'attachment',
-      link: asset.url,
-      title: { rendered: asset.originalFilename || 'Image' },
-      caption: { rendered: asset.description || '' },
-      alt_text: asset.altText || '',
-      source_url: asset.url,
-      media_type: 'image',
-      mime_type: 'image/jpeg',
-    }));
+    const mapped = assets.map((asset: any) => {
+      // 稳定的数字 ID
+      const numericId = hashString(asset._id);
+      return {
+        id: numericId,
+        date: asset._createdAt,
+        slug: asset.originalFilename || `image-${numericId}`,
+        type: 'attachment',
+        link: asset.url,
+        title: { rendered: asset.title || asset.originalFilename || 'Image' },
+        caption: { rendered: asset.description || '' },
+        alt_text: asset.altText || '',
+        source_url: asset.url,
+        media_type: 'image',
+        mime_type: 'image/jpeg',
+      };
+    });
 
     return NextResponse.json(mapped, { status: 200, headers: getCorsHeaders() });
   } catch {
@@ -99,10 +113,11 @@ export async function POST(request: Request) {
     const asset = await writeClient.assets.upload('image', uploadBuffer, { filename });
     console.log(`[Media API] Upload success: ${asset._id}`);
 
-    const numericId = Math.floor(Math.random() * 10000000); 
+    const numericId = hashString(asset._id);
 
+    // 回写信息到 Sanity 以确保立刻同步
     await writeClient.patch(asset._id).set({
-      title: numericId.toString(),
+      title: titleFromForm,
       description: altText,
       altText: altText
     }).commit();
