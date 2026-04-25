@@ -62,52 +62,75 @@ export async function POST(request: Request) {
     let titleFromForm = filename;
 
     const contentType = request.headers.get('content-type') || '';
+    const clonedReq = request.clone();
     
     if (contentType.includes('multipart/form-data')) {
-      const formData = await request.formData();
-      
-      let fileKey = Array.from(formData.keys()).find(k => {
-        const val = formData.get(k);
-        return val && typeof val === 'object' && 'arrayBuffer' in val;
-      });
-      
-      const fileEntry = fileKey ? formData.get(fileKey) : null;
+      try {
+        const formData = await request.formData();
+        
+        let fileEntry: any = formData.get('file') || formData.get('async-upload');
+        if (!fileEntry) {
+            const fileKey = Array.from(formData.keys()).find(k => {
+              const val = formData.get(k);
+              return val && typeof val === 'object';
+            });
+            if (fileKey) fileEntry = formData.get(fileKey);
+        }
 
-      if (fileEntry && typeof fileEntry === 'object') {
-        const file = fileEntry as File;
-        filename = file.name || filename;
-        titleFromForm = filename;
-        const arrayBuf = await file.arrayBuffer();
-        uploadBuffer = Buffer.from(arrayBuf);
+        if (fileEntry && typeof fileEntry === 'object') {
+          filename = fileEntry.name || filename;
+          const arrayBuf = await fileEntry.arrayBuffer();
+          uploadBuffer = Buffer.from(arrayBuf);
+        }
+        
+        if (formData.has('alt_text')) altText = formData.get('alt_text') as string;
+        if (formData.has('title')) titleFromForm = formData.get('title') as string;
+      } catch (err) {
+        console.error("FormData parse failed, falling back");
       }
-      
-      if (formData.has('alt_text')) altText = formData.get('alt_text') as string || altText;
-      if (formData.has('title')) titleFromForm = formData.get('title') as string || titleFromForm;
-    } else if (contentType.includes('application/json')) {
-      const jsonBody = await request.json();
-      const rawData = jsonBody.file || jsonBody.data || jsonBody.image || jsonBody.content;
-      if (rawData) {
-        const base64Data = rawData.replace(/^data:image\/\w+;base64,/, "");
-        uploadBuffer = Buffer.from(base64Data, 'base64');
+    } 
+    
+    if (!uploadBuffer && contentType.includes('application/json')) {
+      try {
+        const jsonBody = await request.json();
+        const rawData = jsonBody.file || jsonBody.data || jsonBody.image || jsonBody.content;
+        if (rawData) {
+          const base64Data = rawData.replace(/^data:image\/\w+;base64,/, "");
+          uploadBuffer = Buffer.from(base64Data, 'base64');
+        }
+        filename = jsonBody.filename || jsonBody.title || filename;
+        titleFromForm = jsonBody.title || filename;
+        altText = jsonBody.alt_text || altText;
+      } catch (err) {
+        console.error("JSON parse failed, falling back");
       }
-      filename = jsonBody.filename || jsonBody.title || filename;
-      titleFromForm = jsonBody.title || filename;
-      altText = jsonBody.alt_text || altText;
-    } else {
-      const disposition = request.headers.get('content-disposition');
-      if (disposition) {
-         const match = disposition.match(/filename="?([^"]+)"?/);
-         if (match) filename = match[1];
-      }
-      const arrayBuf = await request.arrayBuffer();
-      uploadBuffer = Buffer.from(arrayBuf);
-      titleFromForm = filename;
+    } 
+    
+    if (!uploadBuffer) {
+      try {
+        const disposition = request.headers.get('content-disposition');
+        if (disposition) {
+           const match = disposition.match(/filename="?([^"]+)"?/);
+           if (match) filename = match[1];
+        }
+        const arrayBuf = await clonedReq.arrayBuffer();
+        if (arrayBuf.byteLength > 0) {
+            uploadBuffer = Buffer.from(arrayBuf);
+            titleFromForm = filename;
+        }
+      } catch (err) {}
     }
 
     if (!uploadBuffer || uploadBuffer.length === 0) {
-      console.error("[Media API] Upload Failed: Buffer is empty or file not found in request");
-      return NextResponse.json({ message: "No file found or file is empty" }, { status: 400, headers: getCorsHeaders() });
+      // 绝对不能报 500，返回带调试信息的 200 或 400
+      return NextResponse.json({ 
+        message: "No valid image buffer extracted. Content-Type was: " + contentType,
+        data: { status: 400 }
+      }, { status: 400, headers: getCorsHeaders() });
     }
+
+    // 清理文件名，防止特殊字符导致 Sanity 炸掉
+    filename = filename.replace(/[^a-zA-Z0-9.\-_]/g, '_');
 
     console.log(`[Media API] Uploading ${filename} to Sanity...`);
     const asset = await writeClient.assets.upload('image', uploadBuffer, { filename });
@@ -115,7 +138,7 @@ export async function POST(request: Request) {
 
     const numericId = hashString(asset._id);
 
-    // 回写信息到 Sanity 以确保立刻同步
+    // 回写信息到 Sanity
     await writeClient.patch(asset._id).set({
       title: titleFromForm,
       description: altText,
@@ -161,11 +184,12 @@ export async function POST(request: Request) {
     
   } catch (error: any) {
     console.error("[Media API] Fatal Upload Error: ", error);
+    // 即使底层全面崩溃，也不返回 500 导致弹窗！返回 400 把错误送给 301！
     return NextResponse.json({ 
       code: "rest_upload_sideload_error",
-      message: error?.message || "Upload failed", 
-      data: { status: 500 }
-    }, { status: 500, headers: getCorsHeaders() });
+      message: `Fatal upload crash: ${error?.message || "Unknown error"}. Check Vercel logs.`,
+      data: { status: 400 }
+    }, { status: 400, headers: getCorsHeaders() });
   }
 }
 
