@@ -3,6 +3,16 @@ import { writeClient } from '@/sanity/lib/write-client';
 import { client } from '@/sanity/lib/client';
 import { getCorsHeaders } from '../../utils';
 
+function hashString(str: string): number {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash;
+  }
+  return Math.abs(hash);
+}
+
 export async function OPTIONS() {
   return NextResponse.json({}, { headers: getCorsHeaders() });
 }
@@ -21,6 +31,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
+    const targetIdNum = parseInt(id);
     
     // 我们尝试获取 body 里的更新信息（可能是 application/json 或 multipart）
     const contentType = request.headers.get('content-type') || '';
@@ -37,18 +48,30 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       titleText = formData.get('title') as string;
     }
 
-    // 查找在 Sanity 里对应的 asset (通过 title == ID)
     if (altText || titleText) {
-      const existingDoc = await client.fetch(`*[_type == "sanity.imageAsset" && title == $id][0]`, { id });
-      if (existingDoc) {
-        const patch = writeClient.patch(existingDoc._id);
+      // 获取最近的 150 张图片以进行哈希匹配
+      const recentAssets = await client.fetch(`*[_type == "sanity.imageAsset"] | order(_createdAt desc)[0...150] { _id }`);
+      let targetSanityId = null;
+      
+      for (const asset of recentAssets) {
+        if (hashString(asset._id) === targetIdNum) {
+          targetSanityId = asset._id;
+          break;
+        }
+      }
+
+      if (targetSanityId) {
+        const patch = writeClient.patch(targetSanityId);
         if (altText) patch.set({ altText: altText, description: altText });
+        if (titleText) patch.set({ title: titleText, originalFilename: titleText });
         await patch.commit();
+      } else {
+         console.warn(`[Media Update API] Could not find Sanity asset matching hash ID ${id}`);
       }
     }
 
     return NextResponse.json({
-      id: parseInt(id),
+      id: targetIdNum,
       date: new Date().toISOString(),
       status: 'inherit',
       type: 'attachment',
