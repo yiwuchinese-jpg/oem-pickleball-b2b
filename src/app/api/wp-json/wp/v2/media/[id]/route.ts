@@ -33,41 +33,49 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     const { id } = await params;
     const targetIdNum = parseInt(id);
     
-    // 我们尝试获取 body 里的更新信息（可能是 application/json 或 multipart）
-    const contentType = request.headers.get('content-type') || '';
-    let altText;
-    let titleText;
+    let altText = '';
+    let titleText = '';
+    let rawBodyDump = '';
 
-    if (contentType.includes('application/json')) {
-      const body = await request.json().catch(() => ({}));
-      altText = body.alt_text;
-      titleText = typeof body.title === 'object' ? body.title.rendered : body.title;
-    } else if (contentType.includes('multipart/form-data')) {
-      const formData = await request.formData().catch(() => new FormData());
-      altText = formData.get('alt_text') as string;
-      titleText = formData.get('title') as string;
+    // 暴力解析所有的可能性，以便知道它到底发了什么
+    const clonedReq = request.clone();
+    try {
+      const jsonBody = await request.json();
+      altText = jsonBody.alt_text || jsonBody.altText || jsonBody.description || '';
+      titleText = typeof jsonBody.title === 'object' ? jsonBody.title.rendered : jsonBody.title;
+      rawBodyDump = JSON.stringify(jsonBody);
+    } catch (e) {
+      try {
+        const formData = await clonedReq.formData();
+        altText = formData.get('alt_text') as string || formData.get('description') as string || '';
+        titleText = formData.get('title') as string || '';
+        const formObj: any = {};
+        formData.forEach((value, key) => { formObj[key] = value });
+        rawBodyDump = JSON.stringify(formObj);
+      } catch (err) {
+        rawBodyDump = "Could not parse body";
+      }
     }
 
-    if (altText || titleText) {
-      // 获取最近的 150 张图片以进行哈希匹配
-      const recentAssets = await client.fetch(`*[_type == "sanity.imageAsset"] | order(_createdAt desc)[0...150] { _id }`);
-      let targetSanityId = null;
-      
-      for (const asset of recentAssets) {
-        if (hashString(asset._id) === targetIdNum) {
-          targetSanityId = asset._id;
-          break;
-        }
+    const recentAssets = await client.fetch(`*[_type == "sanity.imageAsset"] | order(_createdAt desc)[0...200] { _id }`);
+    let targetSanityId = null;
+    
+    for (const asset of recentAssets) {
+      if (hashString(asset._id) === targetIdNum) {
+        targetSanityId = asset._id;
+        break;
       }
+    }
 
-      if (targetSanityId) {
-        const patch = writeClient.patch(targetSanityId);
-        if (altText) patch.set({ altText: altText, description: altText });
-        if (titleText) patch.set({ title: titleText, originalFilename: titleText });
-        await patch.commit();
-      } else {
-         console.warn(`[Media Update API] Could not find Sanity asset matching hash ID ${id}`);
-      }
+    if (targetSanityId) {
+      const patch = writeClient.patch(targetSanityId);
+      // 把收到的原生数据包强行写进 description 里面作为我们的查错日志！！！
+      patch.set({ description: `DEBUG PAYLOAD: ${rawBodyDump}` });
+      if (altText) patch.set({ altText: altText });
+      if (titleText) patch.set({ title: titleText, originalFilename: titleText });
+      await patch.commit();
+    } else {
+       console.warn(`[Media Update API] Could not find Sanity asset matching hash ID ${id}`);
     }
 
     return NextResponse.json({
