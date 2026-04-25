@@ -57,25 +57,33 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       }
     }
 
-    const recentAssets = await client.fetch(`*[_type == "sanity.imageAsset"] | order(_createdAt desc)[0...200] { _id }`);
     let targetSanityId = null;
-    
-    for (const asset of recentAssets) {
-      if (hashString(asset._id) === targetIdNum) {
-        targetSanityId = asset._id;
-        break;
+
+    // 第一层：尝试用兼容老版本的随机 ID (储存在 title 字段) 查找
+    const existingDoc = await client.fetch(`*[_type == "sanity.imageAsset" && title == $id][0] { _id }`, { id });
+    if (existingDoc && existingDoc._id) {
+      targetSanityId = existingDoc._id;
+    }
+
+    // 第二层：如果没找到，说明是新机制传图，尝试用 hashString(_id) 匹配
+    if (!targetSanityId) {
+      const recentAssets = await client.fetch(`*[_type == "sanity.imageAsset"] | order(_createdAt desc)[0...200] { _id }`);
+      for (const asset of recentAssets) {
+        if (hashString(asset._id) === targetIdNum) {
+          targetSanityId = asset._id;
+          break;
+        }
       }
     }
 
     if (targetSanityId) {
       const patch = writeClient.patch(targetSanityId);
-      // 把收到的原生数据包强行写进 description 里面作为我们的查错日志！！！
       patch.set({ description: `DEBUG PAYLOAD: ${rawBodyDump}` });
       if (altText) patch.set({ altText: altText });
       if (titleText) patch.set({ title: titleText, originalFilename: titleText });
       await patch.commit();
     } else {
-       console.warn(`[Media Update API] Could not find Sanity asset matching hash ID ${id}`);
+       console.warn(`[Media Update API] Could not find Sanity asset matching ID ${id} via title or hash`);
     }
 
     return NextResponse.json({
