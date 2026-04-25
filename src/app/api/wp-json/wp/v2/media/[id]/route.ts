@@ -35,26 +35,21 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     
     let altText = '';
     let titleText = '';
-    let rawBodyDump = '';
+    let descriptionText = '';
 
-    // 暴力解析所有的可能性，以便知道它到底发了什么
     const clonedReq = request.clone();
     try {
       const jsonBody = await request.json();
-      altText = jsonBody.alt_text || jsonBody.altText || jsonBody.description || '';
+      altText = jsonBody.alt_text || jsonBody.altText || '';
+      descriptionText = jsonBody.description || jsonBody.caption || altText;
       titleText = typeof jsonBody.title === 'object' ? jsonBody.title.rendered : jsonBody.title;
-      rawBodyDump = JSON.stringify(jsonBody);
     } catch (e) {
       try {
         const formData = await clonedReq.formData();
-        altText = formData.get('alt_text') as string || formData.get('description') as string || '';
+        altText = formData.get('alt_text') as string || '';
+        descriptionText = formData.get('description') as string || formData.get('caption') as string || altText;
         titleText = formData.get('title') as string || '';
-        const formObj: any = {};
-        formData.forEach((value, key) => { formObj[key] = value });
-        rawBodyDump = JSON.stringify(formObj);
-      } catch (err) {
-        rawBodyDump = "Could not parse body";
-      }
+      } catch (err) {}
     }
 
     let targetSanityId = null;
@@ -78,8 +73,8 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
 
     if (targetSanityId) {
       const patch = writeClient.patch(targetSanityId);
-      patch.set({ description: `DEBUG PAYLOAD: ${rawBodyDump}` });
       if (altText) patch.set({ altText: altText });
+      if (descriptionText) patch.set({ description: descriptionText });
       if (titleText) patch.set({ title: titleText, originalFilename: titleText });
       await patch.commit();
     } else {
@@ -93,6 +88,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       type: 'attachment',
       title: { rendered: titleText || id },
       alt_text: altText || '',
+      description: { rendered: descriptionText || '' }
     }, { status: 200, headers: getCorsHeaders() });
 
   } catch (error: any) {
