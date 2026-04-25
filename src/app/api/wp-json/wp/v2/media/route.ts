@@ -18,9 +18,28 @@ function hashString(str: string): number {
 
 export async function OPTIONS() { return NextResponse.json({}, { headers: getCorsHeaders() }); }
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
-    const assets = await client.fetch(`*[_type == "sanity.imageAsset"] | order(_createdAt desc)[0...100] {
+    const { searchParams } = new URL(request.url);
+    const page = parseInt(searchParams.get('page') || '1') || 1;
+    const perPage = parseInt(searchParams.get('per_page') || '100') || 100;
+    
+    const start = (page - 1) * perPage;
+    const end = start + perPage;
+
+    // 先查询总数以设置 WordPress 规范头部
+    const totalCount = await client.fetch(`count(*[_type == "sanity.imageAsset"])`);
+    const totalPages = Math.ceil(totalCount / perPage);
+
+    // 如果超出了最大页数，直接返回空数组，告诉 301 已经到底了
+    if (page > totalPages && totalPages > 0) {
+       const headers = getCorsHeaders();
+       headers.set('X-WP-Total', totalCount.toString());
+       headers.set('X-WP-TotalPages', totalPages.toString());
+       return NextResponse.json([], { status: 200, headers });
+    }
+
+    const assets = await client.fetch(`*[_type == "sanity.imageAsset"] | order(_createdAt desc)[$start...$end] {
       _id,
       _createdAt,
       url,
@@ -28,10 +47,9 @@ export async function GET() {
       title,
       description,
       altText
-    }`);
+    }`, { start, end });
 
     const mapped = assets.map((asset: any) => {
-      // 稳定的数字 ID
       const numericId = hashString(asset._id);
       return {
         id: numericId,
@@ -48,8 +66,13 @@ export async function GET() {
       };
     });
 
-    return NextResponse.json(mapped, { status: 200, headers: getCorsHeaders() });
-  } catch {
+    const headers = getCorsHeaders();
+    headers.set('X-WP-Total', totalCount.toString());
+    headers.set('X-WP-TotalPages', totalPages.toString());
+
+    return NextResponse.json(mapped, { status: 200, headers });
+  } catch (error) {
+    console.error("GET Media Error:", error);
     return NextResponse.json([], { status: 200, headers: getCorsHeaders() });
   }
 }
