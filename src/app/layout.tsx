@@ -13,7 +13,7 @@ const montserrat = Montserrat({
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://pickleoem.com'),
-  title: "OEM Pickleball Factory | Direct Wholesale & Custom Paddles",
+  title: "DJW Pickleball Factory | Direct Wholesale & Custom Paddles",
   description: "Direct China factory for premium USAPA approved pickleball paddles and balls. Roto-molded manufacturing, custom OEM/ODM designs. DDP Shipping worldwide.",
   verification: {
     google: "AbaBVHU6Hc0zfIksBzAc3n9932J916u4Zz9eltnEDzM",
@@ -22,16 +22,16 @@ export const metadata: Metadata = {
     canonical: "https://pickleoem.com",
   },
   openGraph: {
-    title: "OEM Pickleball Factory | Direct Wholesale",
+    title: "DJW Pickleball Factory | Direct Wholesale",
     description: "Premium USAPA approved pickleball paddles and balls. Direct from China.",
     url: "https://pickleoem.com",
-    siteName: "Pickleball B2B Supply",
+    siteName: "DJW Pickleball B2B Supply",
     images: [
       {
         url: "/og-image.jpg",
         width: 1200,
         height: 630,
-        alt: "Pickleball Wholesale Premium Quality",
+        alt: "DJW Pickleball Wholesale Premium Quality",
       },
     ],
     locale: "en_PH",
@@ -39,7 +39,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "OEM Pickleball Factory | Direct Wholesale",
+    title: "DJW Pickleball Factory | Direct Wholesale",
     description: "Premium USAPA approved pickleball paddles and balls. Direct from China.",
     images: ["/og-image.jpg"],
   },
@@ -49,7 +49,7 @@ export const metadata: Metadata = {
 const organizationSchema = {
   "@context": "https://schema.org",
   "@type": "Organization",
-  name: "OEM Pickleball Factory",
+  name: "DJW Pickleball Factory",
   url: "https://pickleoem.com",
   logo: "https://pickleoem.com/og-image.jpg",
   description: "Direct China factory for premium USAPA approved pickleball paddles and balls.",

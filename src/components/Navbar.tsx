@@ -54,7 +54,7 @@ export default function Navbar() {
             <NextLink href="/" className="flex-shrink-0">
               <span className="text-lg md:text-2xl font-black tracking-tighter text-white flex items-center gap-1 md:gap-2">
                 <span className="text-neon uppercase tracking-widest text-[10px] md:text-sm bg-neon/10 px-1.5 py-0.5 md:px-2 md:py-1 rounded">
-                  OEM
+                  DJW
                 </span>
                 PICKLEBALL
               </span>

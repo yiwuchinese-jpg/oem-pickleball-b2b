@@ -57,7 +57,7 @@ export default function Footer() {
               <NextLink href="/" className="inline-block mb-6">
                 <span className="text-xl font-black tracking-tighter text-white flex items-center gap-2">
                   <span className="text-neon uppercase tracking-widest text-[10px] bg-neon/10 px-2 py-1 rounded">
-                    OEM
+                    DJW
                   </span>
                   PICKLEBALL
                 </span>
