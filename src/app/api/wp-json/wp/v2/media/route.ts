@@ -21,25 +21,22 @@ export async function OPTIONS() { return NextResponse.json({}, { headers: getCor
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
-    const page = parseInt(searchParams.get('page') || '1') || 1;
-    const perPage = parseInt(searchParams.get('per_page') || '100') || 100;
-    
+    const page = parseInt(searchParams.get('page') || '1', 10);
+    const perPage = parseInt(searchParams.get('per_page') || '10', 10);
+    const search = searchParams.get('search') || '';
+
     const start = (page - 1) * perPage;
     const end = start + perPage;
 
-    // 先查询总数以设置 WordPress 规范头部
-    const totalCount = await client.fetch(`count(*[_type == "sanity.imageAsset"])`);
-    const totalPages = Math.ceil(totalCount / perPage);
-
-    // 如果超出了最大页数，直接返回空数组，告诉 301 已经到底了
-    if (page > totalPages && totalPages > 0) {
-       const headers = getCorsHeaders();
-       headers.set('X-WP-Total', totalCount.toString());
-       headers.set('X-WP-TotalPages', totalPages.toString());
-       return NextResponse.json([], { status: 200, headers });
+    let queryCondition = `_type == "sanity.imageAsset"`;
+    if (search) {
+      queryCondition += ` && (title match "*${search}*" || originalFilename match "*${search}*")`;
     }
 
-    const assets = await client.fetch(`*[_type == "sanity.imageAsset"] | order(_createdAt desc)[$start...$end] {
+    const totalCount = await client.fetch(`count(*[${queryCondition}])`);
+    const totalPages = Math.ceil(totalCount / perPage);
+
+    const assets = await client.fetch(`*[${queryCondition}] | order(_createdAt desc)[${start}...${end}] {
       _id,
       _createdAt,
       url,
@@ -47,9 +44,10 @@ export async function GET(request: Request) {
       title,
       description,
       altText
-    }`, { start, end });
+    }`);
 
     const mapped = assets.map((asset: any) => {
+      // 稳定的数字 ID
       const numericId = hashString(asset._id);
       return {
         id: numericId,
@@ -66,13 +64,13 @@ export async function GET(request: Request) {
       };
     });
 
-    const headers = getCorsHeaders();
+    const headers = new Headers(getCorsHeaders() as any);
     headers.set('X-WP-Total', totalCount.toString());
     headers.set('X-WP-TotalPages', totalPages.toString());
 
     return NextResponse.json(mapped, { status: 200, headers });
   } catch (error) {
-    console.error("GET Media Error:", error);
+    console.error("Media GET error:", error);
     return NextResponse.json([], { status: 200, headers: getCorsHeaders() });
   }
 }

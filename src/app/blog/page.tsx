@@ -23,7 +23,7 @@ export const metadata: Metadata = {
   },
 };
 
-export const revalidate = 60; // 缓存 60 秒
+export const revalidate = 0; // 实时同步 CMS 缓存
 
 export default async function BlogPage() {
   try {

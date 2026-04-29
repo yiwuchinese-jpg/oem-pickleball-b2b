@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import BlogPostClient from "./BlogPostClient";
 import { client } from "@/sanity/lib/client";
 
-export const revalidate = 60; // 缓存 60 秒
+export const revalidate = 0; // 实时同步 CMS 缓存
 
 export async function generateStaticParams() {
   try {

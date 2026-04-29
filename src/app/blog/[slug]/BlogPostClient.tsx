@@ -19,8 +19,8 @@ export default function BlogPostClient({ post }: { post: any }) {
   };
 
   const cleanHtml = displayPost.htmlContent
-    .replace(/background-color\s*:\s*(#f[0-9a-f]{5}|#e[0-9a-f]{5}|white|#fff)/gi, 'background-color:transparent')
-    .replace(/(?<![a-z-])color\s*:\s*(#[0-3][0-9a-f]{5}|black)/gi, 'color:inherit');
+    .replace(/background-color\s*:\s*[^;"']+/gi, 'background-color:transparent')
+    .replace(/(?<![a-z-])color\s*:\s*[^;"']+/gi, 'color:inherit');
 
   return (
     <>
@@ -66,7 +66,7 @@ export default function BlogPostClient({ post }: { post: any }) {
 
           {/* Content */}
           <div 
-            className="prose prose-invert prose-lg max-w-none prose-headings:font-black prose-headings:uppercase prose-headings:tracking-tight prose-p:text-gray-300 prose-a:text-neon hover:prose-a:text-white transition-colors prose-li:text-gray-300"
+            className="prose prose-invert prose-lg max-w-none prose-headings:font-black prose-headings:uppercase prose-headings:tracking-tight prose-p:text-gray-300 prose-a:text-neon hover:prose-a:text-white transition-colors prose-li:text-gray-300 prose-td:text-gray-300 prose-th:text-white prose-strong:text-white"
             dangerouslySetInnerHTML={{ __html: cleanHtml }}
           />
 

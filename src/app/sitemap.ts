@@ -4,6 +4,7 @@ import { client } from "@/sanity/lib/client";
 const BASE_URL = "https://pickleoem.com";
 
 // 动态生成 sitemap，自动包含 Sanity 中的所有博客文章
+export const revalidate = 0; // 实时同步 CMS 缓存
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // 静态页面
   const staticPages: MetadataRoute.Sitemap = [
