@@ -19,8 +19,8 @@ export default function BlogPostClient({ post }: { post: any }) {
   };
 
   const cleanHtml = displayPost.htmlContent
-    .replace(/<a([^>]*)>(.*?(?:Browse|Explore|Contact|Quote|WhatsApp|Shop|Buy).*?)<\/a>/gi, '<a$1 class="ai-cta-button">$2</a>')
-    .replace(/background-color\s*:\s*[^;"']+/gi, 'background-color:transparent')
+    .replace(/<a([^>]*)>(.*?(?:Browse|Explore|Contact|Quote|WhatsApp|Shop|Buy|See|Range|Product|Wholesale|Learn|More|Click|Here).*?)<\/a>/gi, '<a$1 class="ai-cta-button">$2</a>')
+    .replace(/(?<![a-z-])background(?:-color)?\s*:\s*[^;"']+/gi, 'background-color:transparent')
     .replace(/(?<![a-z-])color\s*:\s*[^;"']+/gi, 'color:inherit');
 
   return (
