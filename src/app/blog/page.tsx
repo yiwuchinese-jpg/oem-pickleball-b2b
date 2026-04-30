@@ -27,7 +27,8 @@ export const revalidate = 0; // 实时同步 CMS 缓存
 
 export default async function BlogPage() {
   try {
-    const posts = await client.fetch(`*[_type == "post" && defined(slug.current) && !(slug.current match "draft-*")] | order(_createdAt desc) {
+    // 过滤条件：1. 必须是 post 2. slug 存在 3. slug 不是草稿 4. htmlContent (正文) 必须有内容
+    const posts = await client.fetch(`*[_type == "post" && defined(slug.current) && !(slug.current match "draft-*") && defined(htmlContent)] | order(_createdAt desc) {
       title,
       "slug": slug.current,
       description,

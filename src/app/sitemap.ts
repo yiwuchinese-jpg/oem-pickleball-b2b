@@ -50,7 +50,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   let blogPages: MetadataRoute.Sitemap = [];
   try {
     const posts = await client.fetch<{ slug: string; publishedAt?: string }[]>(
-      `*[_type == "post" && defined(slug.current) && !(slug.current match "draft-*")] | order(publishedAt desc) {
+      `*[_type == "post" && defined(slug.current) && !(slug.current match "draft-*") && defined(htmlContent)] | order(publishedAt desc) {
         "slug": slug.current,
         publishedAt
       }`
