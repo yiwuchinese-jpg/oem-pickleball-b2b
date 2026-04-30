@@ -27,13 +27,14 @@ export const revalidate = 0; // 实时同步 CMS 缓存
 
 export default async function BlogPage() {
   try {
-    const posts = await client.fetch(`*[_type == "post" && defined(slug.current) && !(slug.current match "draft-*")] | order(publishedAt desc) {
+    const posts = await client.fetch(`*[_type == "post" && defined(slug.current) && !(slug.current match "draft-*")] | order(_createdAt desc) {
       title,
       "slug": slug.current,
       description,
       category,
       "coverUrl": mainImage.asset->url,
-      publishedAt
+      publishedAt,
+      _createdAt
     }`);
 
     return <BlogClient initialPosts={posts} />;
