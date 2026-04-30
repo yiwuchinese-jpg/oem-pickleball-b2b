@@ -2,6 +2,7 @@
 
 import NextLink from "next/link";
 import { MessageCircle, Mail, MapPin } from "lucide-react";
+import { FaTiktok, FaFacebookF } from "react-icons/fa6";
 import { trackCTAClick, trackWhatsAppOpen, trackEmailClick } from "@/lib/analytics";
 
 const NAV_SECTIONS = [
@@ -70,7 +71,7 @@ export default function Footer() {
                 Leading manufacturer in Yiwu, China. We supply the fastest growing pickleball brands in Philippines,
                 Southeast Asia, and 30+ countries worldwide. MOQ 1,000 pcs (Balls) / 50 pcs (Paddles).
               </p>
-              <div className="space-y-3">
+              <div className="space-y-3 mb-8">
                 <div className="flex items-center gap-3 text-gray-400 text-sm">
                   <MapPin className="w-4 h-4 text-neon flex-shrink-0" />
                   Yiwu, Zhejiang, China (Pickleball Manufacturing Hub)
@@ -81,6 +82,28 @@ export default function Footer() {
                     buydiscoball@gmail.com
                   </a>
                 </div>
+              </div>
+              
+              {/* Social Links */}
+              <div className="flex items-center gap-4">
+                <a 
+                  href="https://www.tiktok.com/@okdjw4?_r=1&_t=ZT-95xkCvog8gI" 
+                  target="_blank" 
+                  rel="noreferrer"
+                  className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-gray-400 hover:text-white hover:bg-neon/20 hover:border-neon/50 hover:shadow-[0_0_15px_rgba(57,255,20,0.3)] transition-all"
+                  aria-label="Follow us on TikTok"
+                >
+                  <FaTiktok className="w-4 h-4" />
+                </a>
+                <a 
+                  href="https://www.facebook.com/share/17WrjMUoXg/?mibextid=wwXIfr" 
+                  target="_blank" 
+                  rel="noreferrer"
+                  className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-gray-400 hover:text-white hover:bg-[#1877F2]/20 hover:border-[#1877F2]/50 hover:shadow-[0_0_15px_rgba(24,119,242,0.3)] transition-all"
+                  aria-label="Follow us on Facebook"
+                >
+                  <FaFacebookF className="w-4 h-4" />
+                </a>
               </div>
             </div>
 

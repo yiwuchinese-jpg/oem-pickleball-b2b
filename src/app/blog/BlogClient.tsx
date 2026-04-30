@@ -8,7 +8,7 @@ import { ArrowRight, Clock, Tag, Search, ChevronLeft, ChevronRight } from "lucid
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
-const POSTS_PER_PAGE = 9;
+const POSTS_PER_PAGE = 6;
 
 const CATEGORY_COLORS: Record<string, string> = {
   "Market Insights": "text-neon bg-neon/10 border-neon/30",
