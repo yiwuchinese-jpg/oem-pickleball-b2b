@@ -31,6 +31,7 @@ export default async function BlogPage() {
       title,
       "slug": slug.current,
       description,
+      category,
       "coverUrl": mainImage.asset->url,
       publishedAt
     }`);
