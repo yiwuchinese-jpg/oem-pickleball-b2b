@@ -219,18 +219,21 @@ export default function AboutClient() {
               </div>
             </div>
 
-            {/* Factory Images */}
+            {/* Real Factory Images */}
             <div className="flex-1 grid grid-cols-2 gap-4 w-full">
-              {["/gallery/gallery_8.jpg", "/gallery/gallery_9.jpg", "/gallery/gallery_5.jpg", "/gallery/gallery_6.jpg", "/gallery/gallery_7.jpg"].map((src, i) => (
+              {["/factory-real/factory-1.jpeg", "/factory-real/factory-2.jpeg", "/factory-real/factory-3.jpeg", "/factory-real/factory-4.jpeg", "/factory-real/factory-22.webp"].map((src, i) => (
                 <motion.div 
                   key={src}
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: i * 0.1 }}
-                  className={`relative rounded-2xl overflow-hidden border border-white/10 ${i === 4 ? "col-span-2 aspect-[21/9]" : "aspect-square"}`}
+                  className={`relative rounded-2xl overflow-hidden border border-white/10 group ${i === 4 ? "col-span-2 aspect-[21/9]" : "aspect-square"}`}
                 >
-                  <Image src={src} alt="Factory Production & Shipping" fill className="object-cover" sizes="(max-width: 1024px) 50vw, 33vw" />
+                  <Image src={src} alt="Actual Factory Production Line" fill className="object-cover group-hover:scale-110 transition-transform duration-700" sizes="(max-width: 1024px) 50vw, 33vw" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
+                    <span className="text-white text-xs font-bold uppercase tracking-wider">Real Factory Footage</span>
+                  </div>
                 </motion.div>
               ))}
             </div>
@@ -242,16 +245,16 @@ export default function AboutClient() {
       <section className="py-20 px-4 bg-neon/5 border-y border-neon/10">
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-3xl md:text-4xl font-black text-white mb-4 uppercase">
-            Why Philippine Buyers <span className="text-neon">Choose Us</span> Over Local Shopee Sellers
+            Why Buyers <span className="text-neon">Choose Us</span> Over Trading Companies
           </h2>
           <p className="text-gray-400 mb-12 text-lg max-w-2xl mx-auto">
-            Ordering above ₱10,000 from overseas attracts Philippine import duties — which eliminates most direct competition from Six Zero, CRBN, etc. Our DDP pricing means you pay one price, guaranteed, no surprise duties.
+            Stop paying middleman markups. We are the direct source. From carbon fiber pressing to edge guard sealing, everything happens in our own facility. 
           </p>
           <div className="grid md:grid-cols-3 gap-6">
             {[
-              { icon: Globe, title: "DDP Philippines", desc: "We handle customs, import duties, and last-mile delivery. You pay one price. No surprises." },
-              { icon: Award, title: "True USAPA Specs", desc: "Full spec documentation available. PPF tournament buyers can verify compliance." },
-              { icon: MessageCircle, title: "WhatsApp Direct", desc: "Talk directly to the factory — not a trading company or reseller. 5-minute reply guaranteed." },
+              { icon: Factory, title: "Direct Factory Pricing", desc: "No trading company markups. You get the exact same paddles as top brands at the true factory cost." },
+              { icon: Award, title: "True USAPA Specs", desc: "Full spec documentation available. Every paddle passes strict QC before leaving our line." },
+              { icon: MessageCircle, title: "WhatsApp Direct", desc: "Talk directly to the factory floor. We send you real-time videos of your paddles being made." },
             ].map(({ icon: Icon, title, desc }) => (
               <div key={title} className="bg-background/60 border border-white/10 rounded-2xl p-6">
                 <Icon className="w-8 h-8 text-neon mb-4" />
@@ -264,8 +267,100 @@ export default function AboutClient() {
             onClick={whatsapp}
             className="mt-12 inline-flex items-center gap-3 bg-neon text-black font-black px-10 py-4 rounded-full text-lg shadow-[0_0_30px_rgba(57,255,20,0.3)] hover:scale-105 transition-transform"
           >
-            <MessageCircle className="w-5 h-5" /> Talk to the Factory
+            <MessageCircle className="w-5 h-5" /> Video Call Our Factory Now
           </button>
+        </div>
+      </section>
+
+      {/* ── 360 VR Factory Tour ── */}
+      <section className="py-24 px-4 bg-[#09090b]">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-5xl font-black text-white uppercase tracking-tight">
+              Step Inside Our <span className="text-neon">360° VR Factory</span>
+            </h2>
+            <p className="text-gray-400 mt-4 text-lg">
+              Look around. We have nothing to hide. This is exactly where your paddles are made.
+            </p>
+          </div>
+
+          <div className="relative w-full h-[600px] md:h-[700px] rounded-3xl overflow-hidden border border-white/10 shadow-[0_0_50px_rgba(57,255,20,0.05)]">
+            <iframe
+              className="absolute inset-0 w-full h-full border-none"
+              src="https://air.1688.com/pages/vr_viewer/vr_hall/dq193oei7/index.html?__pageId__=1247378&wh_pid=1247378&wvUseWKWebView=true&__existtitle__=1&xrBizCode=pmAuthentication&previewToken=c4222f843c8744fc8bd69f8accdff72f&sellerLoginId=lidu363636888"
+              allowFullScreen
+              allow="autoplay; fullscreen; xr-spatial-tracking"
+              referrerPolicy="no-referrer"
+            />
+            {/* Left top brand mask */}
+            <div className="absolute top-4 left-4 md:top-6 md:left-6 z-10 pointer-events-auto flex items-center justify-center px-4 py-2 md:px-5 md:py-2.5 bg-[#09090b]/90 backdrop-blur-sm border border-[#39FF14]/20 rounded-lg shadow-lg">
+              <span className="text-white font-extrabold text-xs md:text-sm tracking-wide">
+                DJW Pickleball
+              </span>
+            </div>
+            {/* Bottom contact bar mask */}
+            <div className="absolute bottom-0 left-0 w-full h-[90px] z-10 pointer-events-auto bg-[#09090b] border-t border-white/5 flex items-center justify-center">
+              <button 
+                onClick={whatsapp}
+                className="px-6 py-3 md:px-10 md:py-4 bg-[#39FF14] text-black rounded-full font-black text-sm md:text-base uppercase tracking-wider shadow-[0_0_20px_rgba(57,255,20,0.2)] hover:bg-white hover:-translate-y-1 transition-all duration-300"
+              >
+                Contact OEM Factory
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Unfiltered Factory Floor (Bento Grid) ── */}
+      <section className="py-24 px-4 bg-deep-blue border-t border-white/5">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-5xl font-black text-white uppercase tracking-tight">
+              Raw & Unfiltered <span className="text-neon">Production</span>
+            </h2>
+            <p className="text-gray-400 mt-4 text-lg">
+              No stock photos. No trading company BS. Just real carbon fiber, real presses, and real paddles.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-4 auto-rows-[150px] md:auto-rows-[250px] gap-4">
+            {/* Grid Item 1 (Large) */}
+            <div className="col-span-2 row-span-2 relative rounded-2xl overflow-hidden border border-white/10 group">
+              <Image src="/factory-real/factory-5.jpeg" alt="Factory Production" fill className="object-cover group-hover:scale-105 transition-transform duration-700" />
+            </div>
+            {/* Grid Item 2 */}
+            <div className="col-span-1 row-span-1 relative rounded-2xl overflow-hidden border border-white/10 group">
+              <Image src="/factory-real/factory-6.jpeg" alt="Factory Production" fill className="object-cover group-hover:scale-105 transition-transform duration-700" />
+            </div>
+            {/* Grid Item 3 */}
+            <div className="col-span-1 row-span-1 relative rounded-2xl overflow-hidden border border-white/10 group">
+              <Image src="/factory-real/factory-7.jpeg" alt="Factory Production" fill className="object-cover group-hover:scale-105 transition-transform duration-700" />
+            </div>
+            {/* Grid Item 4 (Tall) */}
+            <div className="col-span-1 row-span-2 relative rounded-2xl overflow-hidden border border-white/10 group hidden md:block">
+              <Image src="/factory-real/factory-23.webp" alt="Factory Production" fill className="object-cover group-hover:scale-105 transition-transform duration-700" />
+            </div>
+            {/* Grid Item 5 */}
+            <div className="col-span-1 row-span-1 relative rounded-2xl overflow-hidden border border-white/10 group">
+              <Image src="/factory-real/factory-9.jpeg" alt="Factory Production" fill className="object-cover group-hover:scale-105 transition-transform duration-700" />
+            </div>
+            {/* Grid Item 6 (Wide) */}
+            <div className="col-span-2 row-span-1 relative rounded-2xl overflow-hidden border border-white/10 group">
+              <Image src="/factory-real/factory-10.jpeg" alt="Factory Production" fill className="object-cover group-hover:scale-105 transition-transform duration-700" />
+            </div>
+            {/* Grid Item 7 */}
+            <div className="col-span-1 row-span-1 relative rounded-2xl overflow-hidden border border-white/10 group">
+              <Image src="/factory-real/factory-25.webp" alt="Factory Production" fill className="object-cover group-hover:scale-105 transition-transform duration-700" />
+            </div>
+            {/* Grid Item 8 */}
+            <div className="col-span-1 row-span-1 relative rounded-2xl overflow-hidden border border-white/10 group">
+              <Image src="/factory-real/factory-12.jpeg" alt="Factory Production" fill className="object-cover group-hover:scale-105 transition-transform duration-700" />
+            </div>
+            {/* Grid Item 9 (Large) */}
+            <div className="col-span-2 row-span-2 relative rounded-2xl overflow-hidden border border-white/10 group">
+              <Image src="/factory-real/factory-26.webp" alt="Factory Production" fill className="object-cover group-hover:scale-105 transition-transform duration-700" />
+            </div>
+          </div>
         </div>
       </section>
 

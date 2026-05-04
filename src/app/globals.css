@@ -65,6 +65,11 @@ html {
   to   { transform: translateX(-50%); }
 }
 
+@keyframes marquee-reverse {
+  from { transform: translateX(-50%); }
+  to   { transform: translateX(0); }
+}
+
 /* Marquee infinite scroll animation (video wall) */
 @keyframes marquee-video {
   from { transform: translateX(0); }

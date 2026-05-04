@@ -57,7 +57,7 @@ export async function GET(request: Request) {
         link: asset.url,
         title: { rendered: asset.title || asset.originalFilename || 'Image' },
         caption: { rendered: asset.description || '' },
-        alt_text: asset.altText || '',
+        alt_text: asset.altText || asset.description || '',
         source_url: asset.url,
         media_type: 'image',
         mime_type: 'image/jpeg',
