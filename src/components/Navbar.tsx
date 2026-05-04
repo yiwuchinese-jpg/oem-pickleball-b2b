@@ -10,6 +10,7 @@ import { trackCTAClick, trackWhatsAppOpen } from "@/lib/analytics";
 const NAV_LINKS = [
   { label: "Products", href: "/products" },
   { label: "OEM & Custom", href: "/oem" },
+  { label: "Verify Factory", href: "/factory-tour" },
   { label: "About Factory", href: "/about" },
   { label: "Market Insights", href: "/market" },
   { label: "Blog", href: "/blog" }
