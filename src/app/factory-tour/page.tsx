@@ -42,12 +42,12 @@ export default function FactoryTourPage() {
         </div>
       </section>
 
-      {/* ── Official Business License ── */}
+      {/* ── Official Business License & Location ── */}
       <section className="py-12 md:py-20 px-4 bg-[#0d0d10] border-t border-white/5">
         <div className="max-w-7xl mx-auto">
-          <div className="flex flex-col lg:flex-row gap-12 items-center">
+          <div className="flex flex-col lg:flex-row gap-12 items-start">
             {/* Left: License Image */}
-            <div className="flex-1 w-full">
+            <div className="flex-1 w-full space-y-6">
               <motion.div 
                 initial={{ opacity: 0, x: -30 }}
                 whileInView={{ opacity: 1, x: 0 }}
@@ -68,27 +68,28 @@ export default function FactoryTourPage() {
               </motion.div>
             </div>
 
-            {/* Right: Verified Info */}
-            <div className="flex-1 w-full space-y-6">
-              <div className="inline-flex items-center gap-2 bg-neon/10 text-neon px-4 py-2 rounded-lg border border-neon/20">
-                <FileCheck className="w-5 h-5" />
-                <span className="font-bold text-sm">Government Registered Manufacturer</span>
+            {/* Right: Verified Info & Google Maps */}
+            <div className="flex-1 w-full space-y-8">
+              <div>
+                <div className="inline-flex items-center gap-2 bg-neon/10 text-neon px-4 py-2 rounded-lg border border-neon/20 mb-4">
+                  <FileCheck className="w-5 h-5" />
+                  <span className="font-bold text-sm">Government Registered Manufacturer</span>
+                </div>
+                <h2 className="text-3xl md:text-4xl font-black uppercase tracking-tight mb-4">
+                  100% Legal & <span className="text-neon">Verified Entity</span>
+                </h2>
+                <p className="text-gray-400 text-lg leading-relaxed">
+                  We are a legally registered manufacturing enterprise in China, not a shell company or temporary trading desk. Our business license explicitly covers the <strong className="text-white">manufacturing of sports equipment</strong>.
+                </p>
               </div>
-              <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tight">
-                100% Legal & <span className="text-neon">Verified Entity</span>
-              </h2>
-              <p className="text-gray-400 text-lg leading-relaxed">
-                We are a legally registered manufacturing enterprise in China, not a shell company or temporary trading desk. Our business license explicitly covers the <strong className="text-white">manufacturing of sports equipment</strong>.
-              </p>
               
-              <ul className="space-y-4 mt-6">
+              <ul className="space-y-3">
                 {[
                   { label: "Company Name", value: "Jinhua Lidu Sports Goods Co., Ltd." },
                   { label: "Registered Capital", value: "1,000,000 RMB" },
                   { label: "Business Scope", value: "Sports Equipment & Gear Manufacturing" },
-                  { label: "Authority", value: "State Administration for Market Regulation" },
                 ].map((item, i) => (
-                  <li key={i} className="flex items-center gap-4 bg-white/5 p-4 rounded-xl border border-white/5 hover:border-neon/30 transition-colors">
+                  <li key={i} className="flex items-center gap-4 bg-white/5 p-3 rounded-xl border border-white/5">
                     <div className="w-2 h-2 rounded-full bg-neon"></div>
                     <div>
                       <p className="text-xs text-gray-500 uppercase tracking-wider">{item.label}</p>
@@ -97,6 +98,38 @@ export default function FactoryTourPage() {
                   </li>
                 ))}
               </ul>
+
+              {/* Google Maps Location */}
+              <div className="mt-8 border border-white/10 rounded-2xl overflow-hidden bg-[#111] shadow-[0_0_30px_rgba(0,0,0,0.5)]">
+                <div className="bg-[#1a1a1a] px-4 py-3 flex items-center justify-between border-b border-white/5">
+                  <div className="flex items-center gap-2">
+                    <MapPin className="w-5 h-5 text-neon" />
+                    <span className="text-white font-bold text-sm">Factory Location</span>
+                  </div>
+                  <a 
+                    href="https://maps.google.com/?q=Jinhua+Lidu+Sports+Goods+Co.,+Ltd" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-neon text-xs font-bold hover:underline"
+                  >
+                    Open in Maps ↗
+                  </a>
+                </div>
+                <div className="relative w-full h-[200px] md:h-[250px]">
+                  <iframe 
+                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d110034.42618758838!2d119.5398285552309!3d29.083815040332896!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x344f6f4f41052841%3A0xc3f3454b51c89073!2sJinhua%2C%20Zhejiang%2C%20China!5e0!3m2!1sen!2sus!4v1709280000000!5m2!1sen!2sus" 
+                    className="absolute inset-0 w-full h-full border-none"
+                    allowFullScreen={false} 
+                    loading="lazy" 
+                    referrerPolicy="no-referrer-when-downgrade"
+                  />
+                </div>
+                <div className="px-4 py-3 bg-[#1a1a1a] border-t border-white/5">
+                  <p className="text-gray-400 text-xs">
+                    Building 4, Bailongqiao Town Linjiang Industrial Zone, Wucheng District, Jinhua City, Zhejiang Province, China
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
         </div>
