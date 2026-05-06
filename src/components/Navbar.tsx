@@ -4,14 +4,25 @@ import { useState, useEffect } from "react";
 import NextLink from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X } from "lucide-react";
+import { Menu, X, ChevronDown } from "lucide-react";
 import { trackCTAClick, trackWhatsAppOpen } from "@/lib/analytics";
 
-const NAV_LINKS = [
+type NavItem = {
+  label: string;
+  href?: string;
+  children?: { label: string; href: string }[];
+};
+
+const NAV_LINKS: NavItem[] = [
   { label: "Products", href: "/products" },
   { label: "OEM & Custom", href: "/oem" },
-  { label: "Verify Factory", href: "/factory-tour" },
-  { label: "About Factory", href: "/about" },
+  {
+    label: "Our Factory",
+    children: [
+      { label: "Verify Factory", href: "/factory-tour" },
+      { label: "About Factory", href: "/about" },
+    ],
+  },
   { label: "Market Insights", href: "/market" },
   { label: "Blog", href: "/blog" }
 ];
@@ -19,6 +30,7 @@ const NAV_LINKS = [
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const pathname = usePathname();
 
   useEffect(() => {
@@ -28,6 +40,7 @@ export default function Navbar() {
   }, []);
 
   // Close menu on route change
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { setMenuOpen(false); }, [pathname]);
 
   const handleCTA = () => {
@@ -64,23 +77,60 @@ export default function Navbar() {
             {/* Desktop Nav Links */}
             <div className="hidden lg:flex items-center gap-1">
               {NAV_LINKS.map((link) => (
-                <NextLink
-                  key={link.href}
-                  href={link.href}
-                  className={`relative px-4 py-2 rounded-lg text-sm font-semibold transition-colors duration-200 group ${
-                    pathname === link.href
-                      ? "text-neon"
-                      : "text-gray-400 hover:text-white"
-                  }`}
-                >
-                  {link.label}
-                  {pathname === link.href && (
-                    <motion.span
-                      layoutId="nav-indicator"
-                      className="absolute inset-0 bg-neon/10 rounded-lg border border-neon/20"
-                    />
-                  )}
-                </NextLink>
+                link.children ? (
+                  <div
+                    key={link.label}
+                    className="relative group px-4 py-2"
+                    onMouseEnter={() => setActiveDropdown(link.label)}
+                    onMouseLeave={() => setActiveDropdown(null)}
+                  >
+                    <button className="flex items-center gap-1 text-sm font-semibold text-gray-400 hover:text-white transition-colors duration-200">
+                      {link.label}
+                      <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${activeDropdown === link.label ? 'rotate-180 text-neon' : ''}`} />
+                    </button>
+                    <AnimatePresence>
+                      {activeDropdown === link.label && (
+                        <motion.div
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: 10 }}
+                          transition={{ duration: 0.2 }}
+                          className="absolute left-0 top-full mt-2 w-48 bg-[#111] border border-white/10 rounded-xl shadow-2xl overflow-hidden py-2"
+                        >
+                          {link.children.map((child) => (
+                            <NextLink
+                              key={child.href}
+                              href={child.href}
+                              className={`block px-4 py-2 text-sm transition-colors hover:bg-white/5 ${
+                                pathname === child.href ? "text-neon" : "text-gray-300 hover:text-white"
+                              }`}
+                            >
+                              {child.label}
+                            </NextLink>
+                          ))}
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                ) : (
+                  <NextLink
+                    key={link.href}
+                    href={link.href!}
+                    className={`relative px-4 py-2 rounded-lg text-sm font-semibold transition-colors duration-200 group ${
+                      pathname === link.href
+                        ? "text-neon"
+                        : "text-gray-400 hover:text-white"
+                    }`}
+                  >
+                    {link.label}
+                    {pathname === link.href && (
+                      <motion.span
+                        layoutId="nav-indicator"
+                        className="absolute inset-0 bg-neon/10 rounded-lg border border-neon/20"
+                      />
+                    )}
+                  </NextLink>
+                )
               ))}
             </div>
 
@@ -120,22 +170,59 @@ export default function Navbar() {
             <div className="max-w-7xl mx-auto px-4 py-6 flex flex-col gap-2">
               {NAV_LINKS.map((link, i) => (
                 <motion.div
-                  key={link.href}
+                  key={link.label}
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: i * 0.05 }}
                 >
-                  <NextLink
-                    href={link.href}
-                    className={`flex items-center justify-between w-full px-4 py-3.5 rounded-xl text-base font-bold transition-colors ${
-                      pathname === link.href
-                        ? "bg-neon/10 text-neon border border-neon/20"
-                        : "text-gray-300 hover:bg-white/5 hover:text-white"
-                    }`}
-                  >
-                    {link.label}
-                    <span className="text-gray-600">→</span>
-                  </NextLink>
+                  {link.children ? (
+                    <div className="flex flex-col gap-1">
+                      <button
+                        onClick={() => setActiveDropdown(activeDropdown === link.label ? null : link.label)}
+                        className="flex items-center justify-between w-full px-4 py-3.5 rounded-xl text-base font-bold transition-colors text-gray-300 hover:bg-white/5 hover:text-white"
+                      >
+                        {link.label}
+                        <ChevronDown className={`w-5 h-5 transition-transform ${activeDropdown === link.label ? 'rotate-180 text-neon' : ''}`} />
+                      </button>
+                      <AnimatePresence>
+                        {activeDropdown === link.label && (
+                          <motion.div
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: "auto", opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            className="flex flex-col gap-1 pl-4 overflow-hidden"
+                          >
+                            {link.children.map((child) => (
+                              <NextLink
+                                key={child.href}
+                                href={child.href}
+                                className={`flex items-center justify-between w-full px-4 py-3 rounded-xl text-sm font-bold transition-colors ${
+                                  pathname === child.href
+                                    ? "bg-neon/10 text-neon border border-neon/20"
+                                    : "text-gray-400 hover:bg-white/5 hover:text-white"
+                                }`}
+                              >
+                                {child.label}
+                                <span className="text-gray-600">→</span>
+                              </NextLink>
+                            ))}
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
+                  ) : (
+                    <NextLink
+                      href={link.href!}
+                      className={`flex items-center justify-between w-full px-4 py-3.5 rounded-xl text-base font-bold transition-colors ${
+                        pathname === link.href
+                          ? "bg-neon/10 text-neon border border-neon/20"
+                          : "text-gray-300 hover:bg-white/5 hover:text-white"
+                      }`}
+                    >
+                      {link.label}
+                      <span className="text-gray-600">→</span>
+                    </NextLink>
+                  )}
                 </motion.div>
               ))}
 

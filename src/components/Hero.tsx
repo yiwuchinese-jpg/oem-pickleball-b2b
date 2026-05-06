@@ -27,6 +27,7 @@ export default function Hero() {
 
   useEffect(() => {
     const mobile = window.innerWidth < 768;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsMobile(mobile);
 
     if (!containerRef.current) return;

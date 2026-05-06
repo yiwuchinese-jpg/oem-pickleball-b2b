@@ -21,7 +21,7 @@ export default function VideoWall() {
       className="bg-[#050505] border-t border-white/5 py-16 overflow-hidden"
       data-track-section="VideoWall"
     >
-      {/* Header */}
+      {/* Section Header */}
       <div className="px-6 md:px-16 mb-10">
         <motion.h2
           initial={{ opacity: 0, y: 30 }}
@@ -75,7 +75,7 @@ export default function VideoWall() {
             {/* Overlay */}
             <div className="absolute bottom-0 left-0 right-0 p-4 md:p-5 z-10 bg-gradient-to-t from-black via-black/40 to-transparent">
               <span className="text-neon text-[10px] font-mono font-bold tracking-widest mb-1 block">
-                CAM_0{video.id} // LIVE
+                CAM_0{video.id} {/* LIVE */}
               </span>
               <h3 className="text-white text-xs md:text-sm font-bold uppercase leading-tight">
                 {video.title}

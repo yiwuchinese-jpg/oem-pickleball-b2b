@@ -26,9 +26,10 @@ export const metadata: Metadata = {
 export const revalidate = 0; // 实时同步 CMS 缓存
 
 export default async function BlogPage() {
+  let posts = [];
   try {
     // 撤销 defined(htmlContent) 过滤条件，恢复正常显示
-    const posts = await client.fetch(`*[_type == "post" && defined(slug.current) && !(slug.current match "draft-*")] | order(_createdAt desc) {
+    posts = await client.fetch(`*[_type == "post" && defined(slug.current) && !(slug.current match "draft-*")] | order(_createdAt desc) {
       title,
       "slug": slug.current,
       description,
@@ -37,10 +38,9 @@ export default async function BlogPage() {
       publishedAt,
       _createdAt
     }`);
-
-    return <BlogClient initialPosts={posts} />;
   } catch (error) {
     console.error('Sanity fetch failed during build', error);
-    return <BlogClient initialPosts={[]} />;
   }
+  
+  return <BlogClient initialPosts={posts} />;
 }
