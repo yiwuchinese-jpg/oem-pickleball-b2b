@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextResponse } from 'next/server';
 import { client } from '@/sanity/lib/client';
 import { writeClient } from '@/sanity/lib/write-client';

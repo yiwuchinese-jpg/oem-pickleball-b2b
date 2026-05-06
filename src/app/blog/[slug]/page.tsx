@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import BlogPostClient from "./BlogPostClient";
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { client } from "@/sanity/lib/client";
 
 export const revalidate = 0; // 实时同步 CMS 缓存
