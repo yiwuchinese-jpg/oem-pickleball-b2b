@@ -92,13 +92,13 @@ export default function WhatsAppPopup() {
                   Chat on WhatsApp Now
                 </button>
                 
-                {/* Easy 'No thanks' link */}
+                {/* Easy "No thanks" link */}
                 <button
-                  onClick={handleClose}
-                  className="text-gray-500 hover:text-gray-300 text-sm font-semibold transition-colors mt-2 underline underline-offset-4 decoration-transparent hover:decoration-gray-500"
-                >
-                  No thanks, I'm just browsing
-                </button>
+                    onClick={handleClose}
+                    className="text-gray-500 hover:text-gray-300 text-sm font-semibold transition-colors mt-2 underline underline-offset-4 decoration-transparent hover:decoration-gray-500"
+                  >
+                    No thanks, I&apos;m just browsing
+                  </button>
               </div>
             </div>
           </motion.div>

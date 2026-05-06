@@ -1,3 +1,4 @@
+/* eslint-disable */
 const https = require('https');
 
 const auth = Buffer.from('894825716@qq.com:H5Ze AcJY H5Tn MMar tUzd HA6i').toString('base64');
