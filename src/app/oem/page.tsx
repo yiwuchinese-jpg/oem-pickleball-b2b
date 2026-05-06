@@ -6,6 +6,8 @@ import { useGLTF, Environment, ScrollControls, useScroll, Scroll, ContactShadows
 import * as THREE from "three";
 import { motion, useScroll as useFramerScroll, useTransform, AnimatePresence } from "framer-motion";
 import Link from "next/link";
+import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
 
 // ── Reusable CTA Button ──
 function CtaButton({ text = "Chat on WhatsApp", className = "" }: { text?: string, className?: string }) {
@@ -389,6 +391,11 @@ function HtmlContent() {
         </motion.div>
       </section>
 
+      {/* FOOTER AREA */}
+      <section className="w-full bg-[#050505] pointer-events-auto relative z-50">
+        <Footer />
+      </section>
+
     </div>
   );
 }
@@ -490,6 +497,10 @@ export default function ImmersiveOEMPage() {
 
   return (
     <>
+      <div className="fixed top-0 left-0 right-0 z-[100] pointer-events-auto">
+        <Navbar />
+      </div>
+
       <motion.main 
         style={{ backgroundColor }}
         className="w-full h-screen overflow-hidden selection:bg-neon selection:text-black transition-colors duration-500"
@@ -501,7 +512,7 @@ export default function ImmersiveOEMPage() {
           <Environment preset="studio" />
 
           <Suspense fallback={null}>
-            <ScrollControls pages={8} damping={0.15} distance={1.2}>
+            <ScrollControls pages={8.8} damping={0.15} distance={1.2}>
               <Float speed={1.5} rotationIntensity={0.1} floatIntensity={0.3}>
                 <ScrollAnimatedPaddle url="/models/paddle.glb" />
               </Float>
