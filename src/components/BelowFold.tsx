@@ -4,10 +4,6 @@ import dynamic from "next/dynamic";
 
 // Lazy-load all below-the-fold heavy components
 const VirtualTourBanner = dynamic(() => import("@/components/VirtualTourBanner"), { ssr: false });
-const Interactive3DShowcase = dynamic(() => import("@/components/Interactive3DShowcase"), {
-  ssr: false,
-  loading: () => <div className="h-[600px] bg-[#050505] border-y border-white/5" />,
-});
 const VideoWall = dynamic(() => import("@/components/VideoWall"), {
   ssr: false,
   loading: () => <div className="h-screen bg-[#050505] border-t border-white/5" />,
@@ -27,7 +23,6 @@ export default function BelowFold() {
   return (
     <>
       <VirtualTourBanner />
-      <Interactive3DShowcase />
       <PhotoGallery />
       <VideoWall />
       <ProductShowcase />
