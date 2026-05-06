@@ -52,7 +52,7 @@ function ScrollAnimatedPaddle({ url }: { url: string }) {
 
     let targetRotX = 0;
     let targetRotY = 0;
-    let targetRotZ = 0;
+    const targetRotZ = 0;
     let targetPosX = 0;
     let targetPosY = 0;
     let targetScale = baseScale;
@@ -240,7 +240,7 @@ function HtmlContent() {
               <li className="flex items-start gap-3">
                 <span className="text-neon font-bold mt-1">✓</span>
                 <div>
-                  <strong className="text-white">Paddles:</strong> Flexible MOQ depending on mold and material. Let's discuss your exact needs.
+                  <strong className="text-white">Paddles:</strong> Flexible MOQ depending on mold and material. Let&apos;s discuss your exact needs.
                 </div>
               </li>
             </ul>
@@ -311,7 +311,7 @@ function HtmlContent() {
         <div className="absolute inset-0 bg-black/80 z-0" />
         <div className="relative z-10 text-center mb-8 md:mb-16 w-full">
           <h2 className="text-4xl md:text-7xl font-black uppercase">We Build <br className="md:hidden"/><span className="text-neon">Ecosystems.</span></h2>
-          <p className="mt-4 md:mt-6 text-gray-400 text-sm md:text-xl max-w-2xl mx-auto px-4">It's not just paddles. We manufacture custom tournament balls, premium bags, and retail-ready bundle boxes.</p>
+          <p className="mt-4 md:mt-6 text-gray-400 text-sm md:text-xl max-w-2xl mx-auto px-4">It&apos;s not just paddles. We manufacture custom tournament balls, premium bags, and retail-ready bundle boxes.</p>
           <div className="mt-6 pointer-events-auto">
             <CtaButton text="Inquire About Bundles" />
           </div>
@@ -380,7 +380,7 @@ function HtmlContent() {
             Ready to <br/><span className="text-neon">Launch?</span>
           </h1>
           <p className="text-sm md:text-3xl text-gray-300 max-w-3xl mx-auto font-light">
-            You know the process. Let's get your first batch into production.
+            You know the process. Let&apos;s get your first batch into production.
           </p>
           <div className="pt-4 md:pt-8 pointer-events-auto">
             <button className="relative group overflow-hidden bg-white text-black font-black uppercase tracking-widest px-10 py-5 md:px-16 md:py-6 rounded-full text-base md:text-2xl transition-all duration-300 shadow-[0_0_50px_rgba(255,255,255,0.2)] hover:shadow-[0_0_80px_rgba(57,255,20,0.6)] hover:scale-105">
@@ -431,7 +431,7 @@ function IdlePopup({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }
             <h3 className="text-3xl font-black uppercase text-white mb-4 tracking-tight">Still <span className="text-neon">Thinking?</span></h3>
             
             <p className="text-gray-300 mb-8 leading-relaxed text-sm md:text-base">
-              Don't let your competitors beat you to the market. Talk to our engineers right now to get a <strong className="text-white">Free OEM Digital Mockup</strong> for your brand.
+              Don&apos;t let your competitors beat you to the market. Talk to our engineers right now to get a <strong className="text-white">Free OEM Digital Mockup</strong> for your brand.
             </p>
             
             <button 

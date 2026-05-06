@@ -36,7 +36,7 @@ export default function FactoryTourPage() {
               Virtual <span className="text-neon">Factory Verification</span>
             </h1>
             <p className="text-gray-400 text-lg md:text-xl max-w-3xl mx-auto leading-relaxed">
-              Don't just take our word for it. Step inside our 360° VR facility and browse our raw, unfiltered production line. See exactly where and how your carbon fiber paddles are made.
+              Don&#39;t just take our word for it. Step inside our 360° VR facility and browse our raw, unfiltered production line. See exactly where and how your carbon fiber paddles are made.
             </p>
           </motion.div>
         </div>

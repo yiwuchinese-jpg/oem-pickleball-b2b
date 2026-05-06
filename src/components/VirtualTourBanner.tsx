@@ -38,14 +38,14 @@ export default function VirtualTourBanner() {
             </motion.h2>
             
             <motion.p 
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.2 }}
-              className="text-gray-400 text-lg leading-relaxed max-w-xl"
-            >
-              Stop guessing if you're dealing with a middleman. Take a virtual walk through our Yiwu production floor, view our official business license, and see our unfiltered manufacturing process.
-            </motion.p>
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.2 }}
+                viewport={{ once: true }}
+                className="text-gray-400 text-lg leading-relaxed max-w-xl"
+              >
+                Stop guessing if you&apos;re dealing with a middleman. Take a virtual walk through our Yiwu production floor, view our official business license, and see our unfiltered manufacturing process.
+              </motion.p>
             
             <motion.div
               initial={{ opacity: 0, y: 20 }}
