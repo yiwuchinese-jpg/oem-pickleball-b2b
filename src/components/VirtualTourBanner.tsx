@@ -6,6 +6,8 @@ import { motion } from 'framer-motion';
 import { Video, ArrowRight, ShieldCheck } from 'lucide-react';
 
 export default function VirtualTourBanner() {
+  const whatsappUrl = "https://wa.me/8618666680913";
+
   return (
     <section className="py-20 px-4 bg-[#09090b] relative overflow-hidden border-y border-white/5">
       {/* Background Elements */}
@@ -54,13 +56,15 @@ export default function VirtualTourBanner() {
               transition={{ delay: 0.3 }}
               className="pt-4"
             >
-              <NextLink 
-                href="/factory-tour"
-                className="inline-flex items-center gap-3 bg-neon text-black font-black px-8 py-4 rounded-full uppercase tracking-wider hover:bg-white hover:scale-105 transition-all duration-300 shadow-[0_0_30px_rgba(57,255,20,0.3)]"
+              <button 
+                onClick={(e) => {
+                  e.preventDefault();
+                  window.open(whatsappUrl, '_blank');
+                }}
+                className="inline-block bg-[#39FF14] text-black font-black uppercase tracking-widest px-8 py-4 rounded-full hover:bg-white hover:scale-105 transition-all duration-300 shadow-[0_0_30px_rgba(57,255,20,0.3)]"
               >
-                <Video className="w-6 h-6" />
-                Start Virtual Tour <ArrowRight className="w-5 h-5" />
-              </NextLink>
+                Contact via WhatsApp
+              </button>
             </motion.div>
           </div>
 

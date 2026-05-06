@@ -26,10 +26,11 @@ export default function WhatsAppPopup() {
   };
 
   const handleCTA = () => {
-    const text = encodeURIComponent("Hi, I want to get wholesale pricing for pickleballs.");
+    const text = encodeURIComponent("Hi, I'm interested in OEM pickleball paddles. Can you send me the catalog?");
     trackCTAClick("WhatsAppPopup_10s_CTA");
     trackWhatsAppOpen("WhatsAppPopup_10s_CTA");
-    window.open(`https://wa.me/8618666680913?text=${text}`, "_blank");
+    const whatsappUrl = "https://wa.me/8618666680913";
+    window.open(`${whatsappUrl}?text=${text}`, "_blank");
     handleClose();
   };
 

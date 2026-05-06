@@ -9,10 +9,19 @@ import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
+const whatsappUrl = "https://wa.me/8618666680913";
+
 // ── Reusable CTA Button ──
 function CtaButton({ text = "Chat on WhatsApp", className = "" }: { text?: string, className?: string }) {
   return (
-    <button className={`pointer-events-auto bg-neon text-black px-6 py-3 md:px-8 md:py-4 rounded-full font-black uppercase tracking-widest text-xs md:text-sm hover:bg-white hover:scale-105 transition-all duration-300 shadow-[0_0_20px_rgba(57,255,20,0.3)] ${className}`}>
+    <button 
+      onClick={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        window.open(whatsappUrl, '_blank');
+      }} 
+      className={`inline-block pointer-events-auto cursor-pointer relative z-[9999] bg-neon text-black px-6 py-3 md:px-8 md:py-4 rounded-full font-black uppercase tracking-widest text-xs md:text-sm hover:bg-white hover:scale-105 transition-all duration-300 shadow-[0_0_20px_rgba(57,255,20,0.3)] ${className}`}
+    >
       {text}
     </button>
   );
@@ -382,8 +391,15 @@ function HtmlContent() {
           <p className="text-sm md:text-3xl text-gray-300 max-w-3xl mx-auto font-light">
             You know the process. Let&apos;s get your first batch into production.
           </p>
-          <div className="pt-4 md:pt-8 pointer-events-auto">
-            <button className="relative group overflow-hidden bg-white text-black font-black uppercase tracking-widest px-10 py-5 md:px-16 md:py-6 rounded-full text-base md:text-2xl transition-all duration-300 shadow-[0_0_50px_rgba(255,255,255,0.2)] hover:shadow-[0_0_80px_rgba(57,255,20,0.6)] hover:scale-105">
+          <div className="pt-4 md:pt-8 pointer-events-auto relative z-50">
+            <button 
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                window.open(whatsappUrl, '_blank');
+              }} 
+              className="relative group overflow-hidden bg-white text-black font-black uppercase tracking-widest px-10 py-5 md:px-16 md:py-6 rounded-full text-base md:text-2xl transition-all duration-300 shadow-[0_0_50px_rgba(255,255,255,0.2)] hover:shadow-[0_0_80px_rgba(57,255,20,0.6)] hover:scale-105 pointer-events-auto cursor-pointer"
+            >
               <span className="relative z-10 group-hover:text-black transition-colors">Start WhatsApp Chat</span>
               <div className="absolute inset-0 bg-neon translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out z-0" />
             </button>
@@ -436,7 +452,7 @@ function IdlePopup({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }
             
             <button 
               onClick={() => {
-                window.open('https://wa.me/yourwhatsappnumber', '_blank');
+                window.open(whatsappUrl, '_blank');
                 onClose();
               }}
               className="w-full bg-neon text-black font-black uppercase tracking-widest py-4 rounded-full hover:bg-white hover:scale-105 transition-all shadow-[0_0_20px_rgba(57,255,20,0.4)]"
