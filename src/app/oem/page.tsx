@@ -5,6 +5,7 @@ import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { useGLTF, Environment, ScrollControls, useScroll, Scroll, ContactShadows, Float } from "@react-three/drei";
 import * as THREE from "three";
 import { motion, useScroll as useFramerScroll, useTransform, AnimatePresence } from "framer-motion";
+import Image from "next/image";
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -337,7 +338,7 @@ function HtmlContent() {
               className="group relative aspect-square bg-[#111] rounded-2xl md:rounded-3xl p-4 md:p-6 border border-white/5 hover:border-neon/50 transition-all duration-500 md:hover:-translate-y-4"
             >
               <div className="absolute inset-0 bg-gradient-to-t from-neon/10 to-transparent opacity-0 group-hover:opacity-100 rounded-2xl md:rounded-3xl transition-opacity" />
-              <img src={`/products/${num}.png`} alt={`Product ${num}`} className="w-full h-full object-contain drop-shadow-[0_20px_30px_rgba(0,0,0,0.5)] md:group-hover:scale-110 transition-transform duration-500" />
+              <Image src={`/products/${num}.png`} alt={`Product ${num}`} fill sizes="(max-width: 768px) 50vw, 25vw" className="object-contain drop-shadow-[0_20px_30px_rgba(0,0,0,0.5)] md:group-hover:scale-110 transition-transform duration-500" />
             </motion.div>
           ))}
         </div>
@@ -364,7 +365,7 @@ function HtmlContent() {
               viewport={{ amount: 0.3 }}
               className="relative w-[80vw] md:w-auto flex-shrink-0 aspect-[4/5] rounded-2xl md:rounded-[2rem] overflow-hidden border-4 border-white/10 shadow-2xl group snap-center"
             >
-              <img src={`/factory-real/factory-${num}.jpeg`} alt={`Factory ${num}`} className="absolute inset-0 w-full h-full object-cover md:group-hover:scale-110 transition-transform duration-700" />
+              <Image src={`/factory-real/factory-${num}.jpeg`} alt={`Factory ${num}`} fill sizes="(max-width: 768px) 80vw, 33vw" className="object-cover md:group-hover:scale-110 transition-transform duration-700" />
               <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent opacity-80" />
               <div className="absolute bottom-6 left-6 md:bottom-8 md:left-8">
                 <div className="bg-neon text-black text-[10px] md:text-xs font-black uppercase px-2 md:px-3 py-1 rounded-full inline-block mb-2">Live Cam</div>
@@ -522,10 +523,11 @@ export default function ImmersiveOEMPage() {
         className="w-full h-screen overflow-hidden selection:bg-neon selection:text-black transition-colors duration-500"
       >
         <Canvas camera={{ position: [0, 0, 8], fov: 45 }} className="w-full h-full touch-none">
-          <ambientLight intensity={1.2} />
-          <spotLight position={[10, 10, 10]} intensity={3} angle={0.2} penumbra={1} color="#ffffff" />
-          <directionalLight position={[-10, -5, -5]} intensity={2} color="#39FF14" />
-          <Environment preset="studio" />
+          <ambientLight intensity={1.5} />
+          <spotLight position={[10, 10, 10]} intensity={4} angle={0.2} penumbra={1} color="#ffffff" />
+          <directionalLight position={[-10, -5, -5]} intensity={3} color="#39FF14" />
+          <directionalLight position={[0, 10, -10]} intensity={2} color="#ffffff" />
+          {/* <Environment preset="studio" /> Removed to prevent VPN block issues in China */}
 
           <Suspense fallback={null}>
             <ScrollControls pages={8.8} damping={0.15} distance={1.2}>

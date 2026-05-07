@@ -2,6 +2,7 @@
 
 import React from 'react';
 import NextLink from 'next/link';
+import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { Video, ArrowRight, ShieldCheck } from 'lucide-react';
 
@@ -76,10 +77,12 @@ export default function VirtualTourBanner() {
             className="flex-1 w-full relative"
           >
             <NextLink href="/factory-tour" className="block relative aspect-video rounded-2xl overflow-hidden group border border-white/10 bg-black">
-              <img 
+              <Image 
                 src="/factory-real/factory-5.jpeg" 
                 alt="VR Factory Preview" 
-                className="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:opacity-80 group-hover:scale-105 transition-all duration-700"
+                fill
+                sizes="(max-width: 1024px) 100vw, 50vw"
+                className="object-cover opacity-60 group-hover:opacity-80 group-hover:scale-105 transition-all duration-700"
               />
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                 <div className="w-20 h-20 bg-black/50 backdrop-blur-md rounded-full flex items-center justify-center border border-neon/50 group-hover:scale-110 group-hover:bg-neon/20 transition-all duration-300 shadow-[0_0_30px_rgba(57,255,20,0.3)]">

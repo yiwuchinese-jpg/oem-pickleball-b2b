@@ -206,11 +206,12 @@ export default function FactoryTourPage() {
                 transition={{ delay: (i % 10) * 0.05 }}
                 className="relative rounded-xl overflow-hidden border border-white/5 group bg-black break-inside-avoid cursor-pointer"
               >
-                <img 
+                <Image 
                   src={src} 
                   alt={`Factory Production Line ${i + 1}`} 
+                  width={600}
+                  height={800}
                   className="w-full h-auto object-cover group-hover:scale-105 group-hover:brightness-110 transition-all duration-500" 
-                  loading="lazy"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-4 pointer-events-none">
                   <span className="text-neon text-[10px] font-black uppercase tracking-wider mb-1">Verified</span>
@@ -256,11 +257,12 @@ export default function FactoryTourPage() {
               className="relative max-w-5xl w-full flex flex-col items-center justify-center"
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="relative w-full max-h-[65vh] flex justify-center">
-                <img
+              <div className="relative w-full h-[65vh] flex justify-center">
+                <Image
                   src={selectedImage}
                   alt="Factory Large View"
-                  className="max-w-full max-h-[65vh] object-contain rounded-xl shadow-2xl border border-white/10"
+                  fill
+                  className="object-contain rounded-xl shadow-2xl border border-white/10"
                 />
               </div>
               

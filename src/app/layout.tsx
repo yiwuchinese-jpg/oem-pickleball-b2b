@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Montserrat } from "next/font/google";
 import Script from "next/script";
 import Analytics from "@/components/Analytics";
+import MobileStickyCta from "@/components/MobileStickyCta";
 import "./globals.css";
 
 // 精简字重：只加载实际使用的 4 个字重，减少网络请求
@@ -107,6 +108,7 @@ export default function RootLayout({
       </head>
       <body className="min-h-full flex flex-col bg-background text-foreground selection:bg-neon selection:text-black">
         {children}
+        <MobileStickyCta />
         {/* 滚动深度 & 板块曝光 & 停留时间追踪器（无UI渲染）*/}
         <Analytics />
       </body>
