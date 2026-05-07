@@ -122,6 +122,7 @@ export default function FactoryTourPage() {
                     allowFullScreen={false} 
                     loading="lazy" 
                     referrerPolicy="no-referrer-when-downgrade"
+                    sandbox="allow-scripts allow-same-origin allow-popups"
                   />
                 </div>
                 <div className="px-4 py-3 bg-[#1a1a1a] border-t border-white/5">
@@ -149,8 +150,9 @@ export default function FactoryTourPage() {
               style={{ objectFit: 'cover' }}
               src="https://air.1688.com/pages/vr_viewer/vr_hall/dq193oei7/index.html?__pageId__=1247378&wh_pid=1247378&wvUseWKWebView=true&__existtitle__=1&xrBizCode=pmAuthentication&previewToken=c4222f843c8744fc8bd69f8accdff72f&sellerLoginId=lidu363636888"
               allowFullScreen
-              allow="autoplay; fullscreen; xr-spatial-tracking"
+              allow="autoplay; fullscreen; xr-spatial-tracking; camera; gyroscope; accelerometer"
               referrerPolicy="no-referrer"
+              sandbox="allow-scripts allow-same-origin allow-popups allow-forms allow-presentation"
             />
             {/* Left top brand mask */}
             <div className="absolute top-4 left-4 md:top-6 md:left-6 z-10 pointer-events-auto flex items-center justify-center px-4 py-2 md:px-5 md:py-2.5 bg-[#09090b]/90 backdrop-blur-sm border border-[#39FF14]/20 rounded-lg shadow-lg">

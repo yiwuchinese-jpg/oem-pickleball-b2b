@@ -11,8 +11,9 @@ export default function VRTourPage() {
         className="absolute inset-0 w-full h-full border-none"
         src="https://air.1688.com/pages/vr_viewer/vr_hall/dq193oei7/index.html?__pageId__=1247378&wh_pid=1247378&wvUseWKWebView=true&__existtitle__=1&xrBizCode=pmAuthentication&previewToken=c4222f843c8744fc8bd69f8accdff72f&sellerLoginId=lidu363636888"
         allowFullScreen
-        allow="autoplay; fullscreen; xr-spatial-tracking"
+        allow="autoplay; fullscreen; xr-spatial-tracking; camera; gyroscope; accelerometer"
         referrerPolicy="no-referrer"
+        sandbox="allow-scripts allow-same-origin allow-popups allow-forms allow-presentation"
       />
 
       {/* 左上角品牌覆盖 - 响应式：手机端较小，PC端稍大 */}
