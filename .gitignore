@@ -42,3 +42,14 @@ next-env.d.ts
 
 # Original Images
 实拍图库/
+
+# Local Data Imports & Testing
+产品/
+3d 模型/
+*.mjs
+*.js
+!next.config.js
+!tailwind.config.js
+!postcss.config.js
+.trae/
+

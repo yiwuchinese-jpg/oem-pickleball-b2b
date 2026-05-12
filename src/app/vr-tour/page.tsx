@@ -1,8 +1,22 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 
 export default function VRTourPage() {
+  const [alertDialog, setAlertDialog] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+  }>({
+    isOpen: false,
+    title: '',
+    message: ''
+  });
+
+  const showAlert = (title: string, message: string) => {
+    setAlertDialog({ isOpen: true, title, message });
+  };
+
   return (
     // 使用 100dvh 确保在手机浏览器（如 Safari）上下滑动时，高度自适应，不会出现滚动条错位
     <div className="relative w-full h-[100dvh] overflow-hidden bg-[#09090b]">
@@ -34,12 +48,31 @@ export default function VRTourPage() {
       >
         {/* Neon 风格联系按钮 - 响应式：手机端适中，PC端更大 */}
         <button 
-          onClick={() => alert('这里可以接入你的 Contact 表单或邮箱弹窗！')}
+          onClick={() => showAlert('Contact Factory', 'Here you can link to your contact form or email popup!')}
           className="px-6 py-3 md:px-10 md:py-4 bg-[#39FF14] text-black rounded-full font-black text-sm md:text-base uppercase tracking-wider shadow-[0_0_20px_rgba(57,255,20,0.2)] hover:bg-white hover:shadow-[0_0_30px_rgba(255,255,255,0.4)] hover:-translate-y-1 transition-all duration-300"
         >
           Contact OEM Factory
         </button>
       </div>
+
+      {/* Custom Alert Modal */}
+      {alertDialog.isOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm pointer-events-auto">
+          <div className="bg-[#111] border border-white/10 rounded-2xl max-w-md w-full p-6 shadow-2xl relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-full h-1 bg-neon"></div>
+            <h3 className="text-xl font-bold text-white mb-2">{alertDialog.title}</h3>
+            <p className="text-gray-400 mb-8">{alertDialog.message}</p>
+            <div className="flex justify-end">
+              <button
+                onClick={() => setAlertDialog(prev => ({ ...prev, isOpen: false }))}
+                className="px-6 py-2.5 rounded-xl bg-neon text-black font-bold hover:bg-neon/90 transition-colors"
+              >
+                OK
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

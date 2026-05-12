@@ -1,6 +1,10 @@
 import type { Metadata } from "next";
 import AboutClient from "./AboutClient";
 
+
+// Static page — built once and cached indefinitely
+export const revalidate = false;
+
 export const metadata: Metadata = {
   title: "About Our Factory | Yiwu OEM Pickleball Manufacturer — Quality & Trust",
   description:

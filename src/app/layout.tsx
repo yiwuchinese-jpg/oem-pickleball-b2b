@@ -3,6 +3,11 @@ import { Montserrat } from "next/font/google";
 import Script from "next/script";
 import Analytics from "@/components/Analytics";
 import MobileStickyCta from "@/components/MobileStickyCta";
+import CartDrawer from "@/components/CartDrawer";
+import WhatsAppButton from "@/components/WhatsAppButton";
+import { CartProvider } from "@/lib/cart-context";
+import { getExchangeRate } from "@/lib/exchange-rate";
+import { ExchangeRateProvider } from "@/lib/exchange-rate-context";
 import "./globals.css";
 
 // 精简字重：只加载实际使用的 4 个字重，减少网络请求
@@ -52,7 +57,7 @@ const organizationSchema = {
   "@type": "Organization",
   name: "DJW Pickleball Factory",
   url: "https://pickleoem.com",
-  logo: "https://pickleoem.com/og-image.jpg",
+  logo: "https://pickleoem.com/logo-color.png",
   description: "Direct China factory for premium USAPA approved pickleball paddles and balls.",
   contactPoint: {
     "@type": "ContactPoint",
@@ -102,15 +107,21 @@ export default function RootLayout({
           `}
         </Script>
         {/* Pixel noscript fallback（广告拦截或禁用JS时仍可记录落地）*/}
-        <noscript>
-          {`<img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=1461017509091314&ev=PageView&noscript=1" />`}
-        </noscript>
+        <noscript
+          dangerouslySetInnerHTML={{
+            __html: `<img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=1461017509091314&ev=PageView&noscript=1" alt="" />`,
+          }}
+        />
       </head>
       <body className="min-h-full flex flex-col bg-background text-foreground selection:bg-neon selection:text-black">
-        {children}
-        <MobileStickyCta />
-        {/* 滚动深度 & 板块曝光 & 停留时间追踪器（无UI渲染）*/}
-        <Analytics />
+        <CartProvider>
+          {children}
+          <CartDrawer />
+          <MobileStickyCta />
+          <WhatsAppButton />
+          {/* 滚动深度 & 板块曝光 & 停留时间追踪器（无UI渲染）*/}
+          <Analytics />
+        </CartProvider>
       </body>
     </html>
   );

@@ -28,6 +28,12 @@ export default function HowItWorks() {
   return (
     <section className="py-24 bg-deep-blue relative overflow-hidden">
       <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-neon/50 to-transparent" />
+      
+      {/* Background Logo Watermark */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none select-none z-0">
+        <img src="/logo-white.png" alt="" className="w-[400px] md:w-[700px] opacity-[0.03] object-contain rotate-6" />
+      </div>
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         
         <div className="text-center mb-20">

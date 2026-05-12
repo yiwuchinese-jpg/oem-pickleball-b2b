@@ -49,8 +49,13 @@ const SITE_SECTIONS = [
 
 export default function SiteNavSection() {
   return (
-    <section className="py-24 px-4 bg-deep-blue border-y border-white/5">
-      <div className="max-w-7xl mx-auto">
+    <section className="py-24 px-4 bg-deep-blue border-y border-white/5 relative overflow-hidden">
+      {/* Background Logo Watermark */}
+      <div className="absolute right-0 bottom-0 translate-x-1/4 translate-y-1/4 pointer-events-none select-none z-0">
+        <img src="/logo-white.png" alt="" className="w-[400px] md:w-[600px] opacity-[0.04] object-contain rotate-[-10deg]" />
+      </div>
+
+      <div className="max-w-7xl mx-auto relative z-10">
         <motion.div
           className="text-center mb-14"
           initial={{ opacity: 0, y: 20 }}

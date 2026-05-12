@@ -47,6 +47,10 @@ export default function ProductShowcase() {
   return (
     <>
       <section className="bg-[#050505] relative border-t border-white/5 overflow-hidden">
+        {/* Background Logo Watermark */}
+        <div className="absolute top-[20%] left-0 -translate-x-1/4 pointer-events-none select-none z-0">
+          <img src="/logo-white.png" alt="" className="w-[500px] md:w-[800px] opacity-[0.03] object-contain rotate-12" />
+        </div>
         {/* Header */}
         <div className="relative z-10 pt-16 pb-8 px-6 md:px-16">
           <motion.div

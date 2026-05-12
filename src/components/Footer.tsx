@@ -41,6 +41,14 @@ const NAV_SECTIONS = [
       { label: "Import Duty Guide", href: "/market#duty" },
     ],
   },
+  {
+    title: "Legal & Policies",
+    links: [
+      { label: "Privacy Policy", href: "/privacy-policy" },
+      { label: "Refund Policy", href: "/refund-policy" },
+      { label: "Terms of Service", href: "/terms-of-service" },
+    ],
+  },
 ];
 
 export default function Footer() {
@@ -48,19 +56,25 @@ export default function Footer() {
 
   return (
     <>
-      <footer id="inquiry" data-track-section="Footer" className="bg-background pt-20 pb-32 lg:pb-12 border-t border-white/5 relative z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <footer id="inquiry" data-track-section="Footer" className="bg-background pt-20 pb-32 lg:pb-12 border-t border-white/5 relative z-10 overflow-hidden">
+        {/* Background Logo Watermark */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none select-none z-0">
+          <img src="/logo-white.png" alt="" className="w-[600px] md:w-[1000px] opacity-[0.03] object-contain" />
+        </div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
 
           {/* Top: Brand + Contact */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 mb-16">
             {/* Brand */}
             <div>
-              <NextLink href="/" className="inline-block mb-6">
-                <span className="text-xl font-black tracking-tighter text-white flex items-center gap-2">
-                  <span className="text-neon uppercase tracking-widest text-[10px] bg-neon/10 px-2 py-1 rounded">
-                    DJW
-                  </span>
-                  PICKLEBALL
+              <NextLink href="/" className="inline-flex items-center gap-3 mb-6">
+                <img
+                  src="/logo-white.png"
+                  alt="DJW Pickleball"
+                  className="h-9 md:h-11 w-auto"
+                />
+                <span className="text-white font-black text-xl md:text-2xl tracking-tighter mt-1">
+                  <span className="text-neon">DJW</span> Pickleball
                 </span>
               </NextLink>
               <h2 className="text-2xl font-black text-white mb-4">
@@ -142,7 +156,7 @@ export default function Footer() {
           </div>
 
           {/* Nav Link Matrix */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 border-t border-white/5 pt-12 mb-12">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-8 border-t border-white/5 pt-12 mb-12">
             {NAV_SECTIONS.map((section) => (
               <div key={section.title}>
                 <h4 className="text-white font-bold text-sm uppercase tracking-wider mb-4">{section.title}</h4>

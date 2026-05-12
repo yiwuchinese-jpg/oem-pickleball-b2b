@@ -1,6 +1,10 @@
 import type { Metadata } from "next";
 import MarketClient from "./MarketClient";
 
+
+// Static page — built once and cached indefinitely
+export const revalidate = false;
+
 export const metadata: Metadata = {
   title: "Pickleball Market in Philippines & Southeast Asia 2026 | Wholesale Guide",
   description:

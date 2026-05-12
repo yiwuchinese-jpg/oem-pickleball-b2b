@@ -10,8 +10,15 @@ export async function OPTIONS() {
 
 export async function GET(request: Request) {
   const authHeader = request.headers.get('authorization');
-  const user = process.env.WP_MOCK_USERNAME || '894825716@qq.com';
-  const pass = process.env.WP_MOCK_PASSWORD || 'Cylldjw99!';
+  
+  // SECURE: No hardcoded credentials. Must be set in .env.local
+  const user = process.env.WP_MOCK_USERNAME;
+  const pass = process.env.WP_MOCK_PASSWORD;
+  
+  if (!user || !pass) {
+    return NextResponse.json({ message: "Server configuration error: Missing WP Mock credentials" }, { status: 500, headers: getCorsHeaders() });
+  }
+
   const expectedToken = Buffer.from(`${user}:${pass}`).toString('base64');
 
   if (!authHeader || authHeader !== `Basic ${expectedToken}`) {

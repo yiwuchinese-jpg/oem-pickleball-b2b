@@ -5,6 +5,7 @@ import Image from "next/image";
 import NextLink from "next/link";
 import { motion } from "framer-motion";
 import { ArrowLeft, Clock, Tag } from "lucide-react";
+import DOMPurify from 'isomorphic-dompurify';
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
@@ -19,10 +20,12 @@ export default function BlogPostClient({ post }: { post: any }) {
     htmlContent: post.htmlContent || `<p>${post.description || "No content provided."}</p>`
   };
 
-  const cleanHtml = displayPost.htmlContent
-    .replace(/<a([^>]*)>(.*?(?:Browse|Explore|Contact|Quote|WhatsApp|Shop|Buy|See|Range|Product|Wholesale|Learn|More|Click|Here).*?)<\/a>/gi, '<a$1 class="ai-cta-button">$2</a>')
-    .replace(/(?<![a-z-])background(?:-color)?\s*:\s*[^;"']+/gi, 'background-color:transparent')
-    .replace(/(?<![a-z-])color\s*:\s*[^;"']+/gi, 'color:inherit');
+  const cleanHtml = DOMPurify.sanitize(
+    displayPost.htmlContent
+      .replace(/<a([^>]*)>(.*?(?:Browse|Explore|Contact|Quote|WhatsApp|Shop|Buy|See|Range|Product|Wholesale|Learn|More|Click|Here).*?)<\/a>/gi, '<a$1 class="ai-cta-button">$2</a>')
+      .replace(/(?<![a-z-])background(?:-color)?\s*:\s*[^;"']+/gi, 'background-color:transparent')
+      .replace(/(?<![a-z-])color\s*:\s*[^;"']+/gi, 'color:inherit')
+  );
 
   return (
     <>

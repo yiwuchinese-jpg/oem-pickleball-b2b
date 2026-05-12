@@ -104,7 +104,12 @@ export default function Hero() {
       {isMobile ? (
         <div className="flex flex-col items-center w-full px-5 mt-4 gap-4">
           {/* Ball — no parallax on mobile */}
-          <div ref={ballLoadRef} className="rounded-full shadow-[0_0_80px_rgba(57,255,20,0.3)] bg-black" style={{ clipPath: "circle(48% at 50% 50%)" }}>
+          <div className="relative">
+            {/* Background Logo Watermark */}
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none z-0">
+            <img src="/logo-white.png" alt="" className="w-[360px] opacity-[0.08]" />
+          </div>
+            <div ref={ballLoadRef} className="relative rounded-full shadow-[0_0_80px_rgba(57,255,20,0.3)] bg-black z-10" style={{ clipPath: "circle(48% at 50% 50%)" }}>
             <Image
               src="/pickleball.png"
               alt="Premium Pickleball"
@@ -113,6 +118,7 @@ export default function Hero() {
               className="w-[200px] object-contain filter brightness-110 contrast-125"
               priority
             />
+          </div>
           </div>
 
           {/* Tags — clean 2-col grid, no overflow */}
@@ -157,6 +163,11 @@ export default function Hero() {
       ) : (
         /* ── DESKTOP LAYOUT ── */
         <div className="relative w-full max-w-7xl flex-1 flex items-center justify-center min-h-[55vh] mt-8 mx-auto px-8">
+          {/* Background Logo Watermark */}
+          <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none select-none">
+            <img src="/logo-white.png" alt="" className="w-[600px] md:w-[800px] opacity-[0.08]" />
+          </div>
+
           {/* Ball */}
           <div ref={ballScrollRef} className="absolute z-20">
             <div ref={ballLoadRef} className="rounded-full shadow-[0_0_100px_rgba(57,255,20,0.3)] bg-black" style={{ clipPath: "circle(48% at 50% 50%)" }}>
