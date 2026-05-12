@@ -1,6 +1,5 @@
 import type { Metadata } from 'next';
 import ProductsClient from './ProductsClient';
-import { createClient } from '@/utils/supabase/server';
 
 export const metadata: Metadata = {
   title: 'Buy Pickleball Paddles & Balls Online | DJW Factory Direct',
@@ -30,11 +29,16 @@ export const metadata: Metadata = {
   ],
 };
 
+import { createClient as createSupabaseClient } from '@supabase/supabase-js';
+
 // 缓存 1 小时（产品和价格不会频繁变化）
 export const revalidate = 3600;
 
 export default async function ProductsPage() {
-  const supabase = await createClient();
+  const supabase = createSupabaseClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
 
   // 只取产品卡片需要的字段，减少数据传输量，加快响应
   const { data: products } = await supabase

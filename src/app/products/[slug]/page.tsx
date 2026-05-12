@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation';
-import { createClient } from '@/utils/supabase/server';
+
 import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 import ProductDetailClient from './ProductDetailClient';
 import type { Metadata } from 'next';
@@ -29,7 +29,10 @@ interface PageProps {
 
 // Memoize the database fetch so generateMetadata and the page don't make duplicate queries
 const getProduct = cache(async (slug: string) => {
-  const supabase = await createClient();
+  const supabase = createSupabaseClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
   const { data: product } = await supabase
     .from('products')
     .select('*, product_skus(*)')
@@ -41,7 +44,10 @@ const getProduct = cache(async (slug: string) => {
 
 // Fetch related products (excluding current product, max 3)
 const getRelatedProducts = cache(async (currentSlug: string) => {
-  const supabase = await createClient();
+  const supabase = createSupabaseClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
   const { data: products } = await supabase
     .from('products')
     .select('id, title, slug, gallery_images, product_skus(price_cents, image_url)')
