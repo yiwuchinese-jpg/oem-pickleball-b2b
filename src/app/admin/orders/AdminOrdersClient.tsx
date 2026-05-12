@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
+import { createClient } from '@/utils/supabase/client';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 
@@ -31,6 +32,20 @@ export default function AdminOrdersClient() {
   };
 
   const router = useRouter();
+  const supabase = createClient();
+
+  // Confirm Modal State
+  const [confirmDialog, setConfirmDialog] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    onConfirm: () => void;
+  }>({
+    isOpen: false,
+    title: '',
+    message: '',
+    onConfirm: () => {}
+  });
 
   useEffect(() => {
     fetchOrders();
@@ -160,6 +175,7 @@ export default function AdminOrdersClient() {
                     <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold ${
                       order.status === 'paid' ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30' :
                       order.status === 'shipped' ? 'bg-neon/20 text-neon border border-neon/30' :
+                      order.status === 'cancelled' ? 'bg-red-500/20 text-red-400 border border-red-500/30' :
                       'bg-white/10 text-gray-300 border border-white/20'
                     }`}>
                       {order.status.toUpperCase()}
@@ -240,9 +256,47 @@ export default function AdminOrdersClient() {
                           Verify Tracking
                         </a>
                       </div>
+                    ) : order.status === 'cancelled' ? (
+                      <div className="bg-red-500/5 p-4 rounded-xl border border-red-500/20 text-sm text-red-400 flex flex-col gap-3">
+                        <p className="font-bold">Order Cancelled</p>
+                        <button 
+                          onClick={() => {
+                            setConfirmDialog({
+                              isOpen: true,
+                              title: 'Delete Order',
+                              message: 'Permanently delete this order?',
+                              onConfirm: async () => {
+                                setConfirmDialog(prev => ({ ...prev, isOpen: false }));
+                                await supabase.from('orders').delete().eq('id', order.id);
+                                fetchOrders();
+                              }
+                            });
+                          }}
+                          className="px-4 py-2 bg-red-500/20 hover:bg-red-500/30 text-red-400 font-bold rounded-lg transition-colors border border-red-500/30"
+                        >
+                          Delete Order Permanently
+                        </button>
+                      </div>
                     ) : (
-                      <div className="bg-white/5 p-4 rounded-xl border border-white/10 text-sm text-gray-400 text-center">
-                        Order is pending payment.
+                      <div className="bg-white/5 p-4 rounded-xl border border-white/10 text-sm text-gray-400 flex flex-col gap-3">
+                        <p>Order is pending payment.</p>
+                        <button 
+                          onClick={() => {
+                            setConfirmDialog({
+                              isOpen: true,
+                              title: 'Cancel Order',
+                              message: 'Are you sure you want to cancel this unpaid order?',
+                              onConfirm: async () => {
+                                setConfirmDialog(prev => ({ ...prev, isOpen: false }));
+                                await supabase.from('orders').update({ status: 'cancelled' }).eq('id', order.id);
+                                fetchOrders();
+                              }
+                            });
+                          }}
+                          className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white font-bold rounded-lg transition-colors border border-white/20"
+                        >
+                          Cancel Order
+                        </button>
                       </div>
                     )}
                   </div>
@@ -268,6 +322,31 @@ export default function AdminOrdersClient() {
                 className="px-6 py-2.5 rounded-xl bg-white/10 text-white font-bold hover:bg-white/20 transition-colors"
               >
                 OK
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Custom Confirm Modal */}
+      {confirmDialog.isOpen && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+          <div className="bg-[#111] border border-white/10 rounded-2xl max-w-md w-full p-6 shadow-2xl relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-full h-1 bg-neon"></div>
+            <h3 className="text-xl font-bold text-white mb-2">{confirmDialog.title}</h3>
+            <p className="text-gray-400 mb-8">{confirmDialog.message}</p>
+            <div className="flex justify-end gap-4">
+              <button
+                onClick={() => setConfirmDialog(prev => ({ ...prev, isOpen: false }))}
+                className="px-5 py-2.5 rounded-xl border border-white/20 text-white hover:bg-white/5 font-medium transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmDialog.onConfirm}
+                className="px-5 py-2.5 rounded-xl bg-red-500 text-white font-bold hover:bg-red-600 transition-colors shadow-[0_0_15px_rgba(239,68,68,0.3)]"
+              >
+                Confirm
               </button>
             </div>
           </div>

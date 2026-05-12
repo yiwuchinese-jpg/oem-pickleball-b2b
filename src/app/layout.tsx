@@ -49,6 +49,10 @@ export const metadata: Metadata = {
     description: "Premium USAPA approved pickleball paddles and balls. Direct from China.",
     images: ["/og-image.jpg"],
   },
+  icons: {
+    icon: "/logo-color.png",
+    apple: "/logo-color.png"
+  }
 };
 
 // Organization JSON-LD 结构化数据

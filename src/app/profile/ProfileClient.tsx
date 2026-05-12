@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { createClient } from '@/utils/supabase/client';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
+import { useCart } from '@/lib/cart-context';
 
 export default function ProfileClient() {
   const [user, setUser] = useState<Record<string, any> | null>(null);
@@ -43,6 +44,26 @@ export default function ProfileClient() {
   });
   const router = useRouter();
   const supabase = createClient();
+  const { clearCart, addItem, openCart } = useCart();
+
+  const handleReorderAndPay = async (order: any) => {
+    // 1. Cancel the old pending order so it doesn't clutter
+    await supabase.from('orders').update({ status: 'cancelled' }).eq('id', order.id);
+    
+    // 2. Clear current cart and add old items
+    clearCart();
+    if (order.order_items && order.order_items.length > 0) {
+      order.order_items.forEach((item: any) => {
+        if (item.products && item.product_skus) {
+          addItem(item.products, item.product_skus, item.quantity);
+        }
+      });
+    }
+    
+    // 3. Open cart and jump to checkout
+    openCart();
+    router.push('/checkout');
+  };
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -256,8 +277,56 @@ export default function ProfileClient() {
                         <p className="text-sm text-gray-400">Order #</p>
                         <p className="font-mono text-sm text-white">{order.id.split('-')[0].toUpperCase()}</p>
                       </div>
-                      <div>
-                        <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold ${
+                      <div className="flex gap-2">
+                        {order.status === 'pending' && (
+                          <button
+                            onClick={() => handleReorderAndPay(order)}
+                            className="bg-neon text-black px-4 py-1.5 rounded-full text-xs font-bold hover:bg-white transition-colors"
+                          >
+                            Pay Now
+                          </button>
+                        )}
+                        {order.status === 'pending' && (
+                          <button
+                            onClick={async () => {
+                              setConfirmDialog({
+                                isOpen: true,
+                                title: 'Cancel Order',
+                                message: 'Are you sure you want to cancel this unpaid order?',
+                                onConfirm: async () => {
+                                  setConfirmDialog(prev => ({ ...prev, isOpen: false }));
+                                  setLoadingOrders(true);
+                                  await supabase.from('orders').update({ status: 'cancelled' }).eq('id', order.id);
+                                  fetchOrders();
+                                }
+                              });
+                            }}
+                            className="bg-white/10 text-white px-4 py-1.5 rounded-full text-xs font-bold border border-white/20 hover:bg-white/20 transition-colors"
+                          >
+                            Cancel
+                          </button>
+                        )}
+                        {order.status === 'cancelled' && (
+                          <button
+                            onClick={async () => {
+                              setConfirmDialog({
+                                isOpen: true,
+                                title: 'Delete Order',
+                                message: 'Are you sure you want to permanently delete this order history?',
+                                onConfirm: async () => {
+                                  setConfirmDialog(prev => ({ ...prev, isOpen: false }));
+                                  setLoadingOrders(true);
+                                  await supabase.from('orders').delete().eq('id', order.id);
+                                  fetchOrders();
+                                }
+                              });
+                            }}
+                            className="bg-red-500/10 text-red-400 px-4 py-1.5 rounded-full text-xs font-bold border border-red-500/20 hover:bg-red-500/20 transition-colors"
+                          >
+                            Delete
+                          </button>
+                        )}
+                        <span className={`inline-flex items-center px-3 py-1.5 rounded-full text-xs font-bold ${
                           order.status === 'paid' ? 'bg-neon/20 text-neon border border-neon/30' :
                           order.status === 'shipped' ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30' :
                           'bg-white/10 text-gray-300 border border-white/20'
