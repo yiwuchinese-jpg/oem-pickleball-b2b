@@ -15,6 +15,8 @@ export default function AdminOrdersClient() {
   // Tracking number inputs mapped by order ID
   const [trackingInputs, setTrackingInputs] = useState<Record<string, string>>({});
   const [submittingId, setSubmittingId] = useState<string | null>(null);
+  const [editingAddressOrder, setEditingAddressOrder] = useState<any | null>(null);
+  const [addressForm, setAddressForm] = useState<any>({});
 
   // Custom Alert Modal State
   const [alertDialog, setAlertDialog] = useState<{
@@ -68,6 +70,22 @@ export default function AdminOrdersClient() {
       setError(err.message);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleSaveAddress = async () => {
+    if (!editingAddressOrder) return;
+    try {
+      const { error } = await supabase
+        .from('orders')
+        .update({ shipping_address: addressForm })
+        .eq('id', editingAddressOrder.id);
+      if (error) throw error;
+      setEditingAddressOrder(null);
+      fetchOrders();
+      showAlert('Success', 'Address updated successfully!');
+    } catch (err: any) {
+      showAlert('Error', err.message);
     }
   };
 
@@ -213,14 +231,59 @@ export default function AdminOrdersClient() {
                     <h3 className="text-sm font-bold text-white mb-4 uppercase tracking-wider">Fulfillment</h3>
                     
                     <div className="mb-6 text-sm text-gray-300">
-                      <p className="font-bold text-white mb-1">Ship to:</p>
+                      <div className="flex items-center justify-between mb-1">
+    <p className="font-bold text-white">Ship to:</p>
+    <button onClick={() => { setEditingAddressOrder(order); setAddressForm(order.shipping_address || {}); }} className="text-xs text-neon hover:underline">Edit</button>
+  </div>
                       <p>{order.shipping_address?.address} {order.shipping_address?.apartment}</p>
                       <p>{order.shipping_address?.city}, {order.shipping_address?.state} {order.shipping_address?.zipCode}</p>
                       <p>{order.shipping_address?.country}</p>
                       <p className="mt-1 text-gray-400">Phone: {order.shipping_address?.phone}</p>
                     </div>
 
-                    {order.status === 'paid' ? (
+                    <div className="mt-8 pt-6 border-t border-red-500/20">
+    <h4 className="text-xs font-bold text-red-500 uppercase tracking-wider mb-3">Admin Overrides</h4>
+    <div className="flex flex-wrap gap-2">
+      {order.status !== 'cancelled' && (
+        <button 
+          onClick={() => {
+            setConfirmDialog({
+              isOpen: true,
+              title: 'Force Cancel Order',
+              message: 'Are you sure you want to force cancel this order?',
+              onConfirm: async () => {
+                setConfirmDialog(prev => ({ ...prev, isOpen: false }));
+                await supabase.from('orders').update({ status: 'cancelled' }).eq('id', order.id);
+                fetchOrders();
+              }
+            });
+          }}
+          className="px-3 py-1.5 bg-white/5 hover:bg-white/10 text-white text-xs font-bold rounded border border-white/10"
+        >
+          Force Cancel
+        </button>
+      )}
+      <button 
+        onClick={() => {
+          setConfirmDialog({
+            isOpen: true,
+            title: 'Delete Order',
+            message: 'Permanently delete this order from the database?',
+            onConfirm: async () => {
+              setConfirmDialog(prev => ({ ...prev, isOpen: false }));
+              await supabase.from('orders').delete().eq('id', order.id);
+              fetchOrders();
+            }
+          });
+        }}
+        className="px-3 py-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 text-xs font-bold rounded border border-red-500/20"
+      >
+        Delete Order
+      </button>
+    </div>
+  </div>
+  
+  {order.status === 'paid' ? (
                       <div className="bg-[#111] p-4 rounded-xl border border-white/10">
                         <label className="block text-xs font-bold text-gray-400 mb-2 uppercase">Enter Tracking Number</label>
                         <div className="flex gap-2">
@@ -257,46 +320,12 @@ export default function AdminOrdersClient() {
                         </a>
                       </div>
                     ) : order.status === 'cancelled' ? (
-                      <div className="bg-red-500/5 p-4 rounded-xl border border-red-500/20 text-sm text-red-400 flex flex-col gap-3">
+                      <div className="bg-red-500/5 p-4 rounded-xl border border-red-500/20 text-sm text-red-400">
                         <p className="font-bold">Order Cancelled</p>
-                        <button 
-                          onClick={() => {
-                            setConfirmDialog({
-                              isOpen: true,
-                              title: 'Delete Order',
-                              message: 'Permanently delete this order?',
-                              onConfirm: async () => {
-                                setConfirmDialog(prev => ({ ...prev, isOpen: false }));
-                                await supabase.from('orders').delete().eq('id', order.id);
-                                fetchOrders();
-                              }
-                            });
-                          }}
-                          className="px-4 py-2 bg-red-500/20 hover:bg-red-500/30 text-red-400 font-bold rounded-lg transition-colors border border-red-500/30"
-                        >
-                          Delete Order Permanently
-                        </button>
                       </div>
                     ) : (
-                      <div className="bg-white/5 p-4 rounded-xl border border-white/10 text-sm text-gray-400 flex flex-col gap-3">
-                        <p>Order is pending payment.</p>
-                        <button 
-                          onClick={() => {
-                            setConfirmDialog({
-                              isOpen: true,
-                              title: 'Cancel Order',
-                              message: 'Are you sure you want to cancel this unpaid order?',
-                              onConfirm: async () => {
-                                setConfirmDialog(prev => ({ ...prev, isOpen: false }));
-                                await supabase.from('orders').update({ status: 'cancelled' }).eq('id', order.id);
-                                fetchOrders();
-                              }
-                            });
-                          }}
-                          className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white font-bold rounded-lg transition-colors border border-white/20"
-                        >
-                          Cancel Order
-                        </button>
+                      <div className="bg-white/5 p-4 rounded-xl border border-white/10 text-sm text-gray-400">
+                        Order is pending payment.
                       </div>
                     )}
                   </div>
@@ -323,6 +352,35 @@ export default function AdminOrdersClient() {
               >
                 OK
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      
+      {/* Address Edit Modal */}
+      {editingAddressOrder && (
+        <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+          <div className="bg-[#111] border border-white/10 rounded-2xl max-w-md w-full p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+            <h3 className="text-xl font-bold text-white mb-4">Edit Shipping Address</h3>
+            <div className="space-y-4">
+              <div><label className="text-xs text-gray-400">First Name</label><input type="text" value={addressForm.firstName || ''} onChange={e => setAddressForm({...addressForm, firstName: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-lg p-2 text-white text-sm" /></div>
+              <div><label className="text-xs text-gray-400">Last Name</label><input type="text" value={addressForm.lastName || ''} onChange={e => setAddressForm({...addressForm, lastName: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-lg p-2 text-white text-sm" /></div>
+              <div><label className="text-xs text-gray-400">Address</label><input type="text" value={addressForm.address || ''} onChange={e => setAddressForm({...addressForm, address: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-lg p-2 text-white text-sm" /></div>
+              <div><label className="text-xs text-gray-400">Apartment/Suite</label><input type="text" value={addressForm.apartment || ''} onChange={e => setAddressForm({...addressForm, apartment: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-lg p-2 text-white text-sm" /></div>
+              <div className="flex gap-4">
+                <div className="flex-1"><label className="text-xs text-gray-400">City</label><input type="text" value={addressForm.city || ''} onChange={e => setAddressForm({...addressForm, city: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-lg p-2 text-white text-sm" /></div>
+                <div className="flex-1"><label className="text-xs text-gray-400">State</label><input type="text" value={addressForm.state || ''} onChange={e => setAddressForm({...addressForm, state: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-lg p-2 text-white text-sm" /></div>
+              </div>
+              <div className="flex gap-4">
+                <div className="flex-1"><label className="text-xs text-gray-400">ZIP</label><input type="text" value={addressForm.zipCode || ''} onChange={e => setAddressForm({...addressForm, zipCode: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-lg p-2 text-white text-sm" /></div>
+                <div className="flex-1"><label className="text-xs text-gray-400">Country</label><input type="text" value={addressForm.country || ''} onChange={e => setAddressForm({...addressForm, country: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-lg p-2 text-white text-sm" /></div>
+              </div>
+              <div><label className="text-xs text-gray-400">Phone</label><input type="text" value={addressForm.phone || ''} onChange={e => setAddressForm({...addressForm, phone: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-lg p-2 text-white text-sm" /></div>
+            </div>
+            <div className="mt-6 flex justify-end gap-3">
+              <button onClick={() => setEditingAddressOrder(null)} className="px-4 py-2 rounded-lg border border-white/20 text-white">Cancel</button>
+              <button onClick={handleSaveAddress} className="px-4 py-2 rounded-lg bg-neon text-black font-bold">Save Changes</button>
             </div>
           </div>
         </div>
