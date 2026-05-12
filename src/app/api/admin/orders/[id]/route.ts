@@ -12,25 +12,27 @@ async function checkAdmin() {
   return true;
 }
 
-export async function DELETE(request: Request, { params }: { params: { id: string } }) {
+export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
+  const resolvedParams = await params;
   if (!(await checkAdmin())) return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
   
   const adminClient = createAdminClient();
   
   // order_items will fail if no ON DELETE CASCADE, so delete them first
-  await adminClient.from('order_items').delete().eq('order_id', params.id);
+  await adminClient.from('order_items').delete().eq('order_id', resolvedParams.id);
   
-  const { error } = await adminClient.from('orders').delete().eq('id', params.id);
+  const { error } = await adminClient.from('orders').delete().eq('id', resolvedParams.id);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   
   return NextResponse.json({ success: true });
 }
 
-export async function PATCH(request: Request, { params }: { params: { id: string } }) {
+export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
+  const resolvedParams = await params;
   if (!(await checkAdmin())) return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
   const body = await request.json();
   const adminClient = createAdminClient();
-  const { error } = await adminClient.from('orders').update(body).eq('id', params.id);
+  const { error } = await adminClient.from('orders').update(body).eq('id', resolvedParams.id);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ success: true });
 }
