@@ -364,6 +364,21 @@ export default function ProfileClient() {
                           </li>
                         ))}
                       </ul>
+                      
+                      <div className="mt-4 pt-4 border-t border-white/5 space-y-2 text-sm">
+                        <div className="flex justify-between text-gray-400">
+                          <span>Subtotal</span>
+                          <span>₱{((order.total_amount_cents - (order.shipping_fee_cents || 0)) / 100).toFixed(2)}</span>
+                        </div>
+                        <div className="flex justify-between text-gray-400">
+                          <span>Shipping Fee</span>
+                          <span>₱{((order.shipping_fee_cents || 0) / 100).toFixed(2)}</span>
+                        </div>
+                        <div className="flex justify-between text-white font-bold pt-2 border-t border-white/5">
+                          <span>Total</span>
+                          <span className="text-neon">₱{(order.total_amount_cents / 100).toFixed(2)}</span>
+                        </div>
+                      </div>
                     </div>
                     {order.tracking_number && (
                       <div className="bg-white/5 px-6 py-4 border-t border-white/10 flex items-center justify-between">
