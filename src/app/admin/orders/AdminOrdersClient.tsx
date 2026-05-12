@@ -78,11 +78,15 @@ export default function AdminOrdersClient() {
   const handleSaveAddress = async () => {
     if (!editingAddressOrder) return;
     try {
-      const { error } = await supabase
-        .from('orders')
-        .update({ shipping_address: addressForm })
-        .eq('id', editingAddressOrder.id);
-      if (error) throw error;
+      const res = await fetch(`/api/admin/orders/${editingAddressOrder.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ shipping_address: addressForm })
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || 'Failed to update address');
+      }
       setEditingAddressOrder(null);
       fetchOrders();
       showAlert('Success', 'Address updated successfully!');
@@ -299,7 +303,7 @@ export default function AdminOrdersClient() {
               message: 'Are you sure you want to force cancel this order?',
               onConfirm: async () => {
                 setConfirmDialog(prev => ({ ...prev, isOpen: false }));
-                await supabase.from('orders').update({ status: 'cancelled' }).eq('id', order.id);
+                await fetch(`/api/admin/orders/${order.id}`, { method: 'PATCH', body: JSON.stringify({ status: 'cancelled' }) });
                 fetchOrders();
               }
             });
@@ -317,7 +321,7 @@ export default function AdminOrdersClient() {
             message: 'Permanently delete this order from the database?',
             onConfirm: async () => {
               setConfirmDialog(prev => ({ ...prev, isOpen: false }));
-              await supabase.from('orders').delete().eq('id', order.id);
+              await fetch(`/api/admin/orders/${order.id}`, { method: 'DELETE' });
               fetchOrders();
             }
           });
