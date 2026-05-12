@@ -216,21 +216,27 @@ export default function Hero() {
         </div>
       )}
 
-      {/* CTA Button */}
+      {/* CTA Buttons */}
       <motion.div
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: isMobile ? 1.4 : 1.8, duration: 0.8 }}
-        className="relative z-40 shrink-0 mt-8 mb-4 px-4"
+        className="relative z-40 shrink-0 mt-8 mb-4 px-4 flex flex-col md:flex-row gap-4 items-center justify-center w-full"
       >
+        <a href="/products" className="w-full md:w-auto">
+          <div className="flex items-center justify-center gap-3 bg-neon text-black w-full md:w-auto px-8 md:px-10 py-4 md:py-5 rounded-full font-black text-lg md:text-xl hover:bg-white transition-colors shadow-[0_0_40px_rgba(57,255,20,0.3)] active:scale-95">
+            Shop All Products <MoveRight className="w-6 h-6" />
+          </div>
+        </a>
+
         <MagneticButton onClick={() => {
           const text = encodeURIComponent("Hi, I saw your pickleball ad, I want to get wholesale pricing...");
           trackCTAClick("Hero_CTA");
           trackWhatsAppOpen("Hero_CTA");
           window.open(`https://wa.me/8618666680913?text=${text}`, "_blank");
         }}>
-          <div className="flex items-center gap-3 bg-neon text-black px-8 md:px-10 py-4 md:py-5 rounded-full font-black text-lg md:text-xl hover:bg-white transition-colors shadow-[0_0_40px_rgba(57,255,20,0.3)]">
-            Get Wholesale Price Now <MoveRight className="w-6 h-6" />
+          <div className="flex items-center justify-center gap-3 bg-white/10 backdrop-blur-sm text-white border border-white/20 w-full md:w-auto px-8 md:px-10 py-4 md:py-5 rounded-full font-bold text-lg hover:bg-white/20 transition-colors active:scale-95">
+            Wholesale Quote
           </div>
         </MagneticButton>
       </motion.div>

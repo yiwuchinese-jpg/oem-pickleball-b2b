@@ -45,7 +45,7 @@ export default function CartDrawer() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={closeCart}
-            className="fixed inset-0 bg-black/70 backdrop-blur-sm z-[100]"
+            className="fixed inset-0 bg-black/70 backdrop-blur-sm z-[10000]"
           />
 
           <motion.div
@@ -68,7 +68,7 @@ export default function CartDrawer() {
               }
               setSwipeOffset(0);
             }}
-            className={`fixed z-[101] flex flex-col bg-[#0d0d10] border-white/10 shadow-2xl
+            className={`fixed z-[10001] flex flex-col bg-[#0d0d10] border-white/10 shadow-2xl
               top-0 right-0 h-full w-full sm:w-[420px] border-l
             `}
           >
