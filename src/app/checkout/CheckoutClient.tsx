@@ -37,9 +37,6 @@ export default function CheckoutClient() {
     phone: "",
   });
 
-  const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
-  const totalPrice = items.reduce((sum, item) => sum + item.sku.price_cents * item.quantity, 0);
-  
   // Shipping fee removed per request
   const shippingCents = 0;
   const grandTotalCents = Math.round(totalPrice + shippingCents);
