@@ -17,6 +17,7 @@ export default function AdminOrdersClient() {
   const [submittingId, setSubmittingId] = useState<string | null>(null);
   const [editingAddressOrder, setEditingAddressOrder] = useState<any | null>(null);
   const [addressForm, setAddressForm] = useState<any>({});
+  const [searchQuery, setSearchQuery] = useState('');
 
   // Custom Alert Modal State
   const [alertDialog, setAlertDialog] = useState<{
@@ -130,6 +131,21 @@ export default function AdminOrdersClient() {
     }
   };
 
+  // Calculate Statistics
+  const validOrders = orders.filter(o => o.status === 'paid' || o.status === 'shipped');
+  const totalRevenue = validOrders.reduce((sum, o) => sum + o.total_amount_cents, 0) / 100;
+  const totalValidOrders = validOrders.length;
+  
+  // Filter Orders
+  const filteredOrders = orders.filter(order => {
+    if (!searchQuery) return true;
+    const query = searchQuery.toLowerCase();
+    const orderId = order.id.toLowerCase();
+    const customerName = `${order.shipping_address?.firstName || ''} ${order.shipping_address?.lastName || ''}`.toLowerCase();
+    const customerEmail = (order.user_email || '').toLowerCase();
+    return orderId.includes(query) || customerName.includes(query) || customerEmail.includes(query);
+  });
+
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex flex-col">
@@ -146,12 +162,39 @@ export default function AdminOrdersClient() {
       <Navbar />
       
       <main className="flex-grow pt-24 pb-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full">
-        <div className="flex items-center justify-between mb-8">
+        {/* Dashboard Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <div className="bg-[#111] border border-white/10 rounded-2xl p-6">
+            <p className="text-gray-400 text-sm font-medium mb-1">Total Revenue</p>
+            <p className="text-3xl font-black text-neon">₱{totalRevenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+          </div>
+          <div className="bg-[#111] border border-white/10 rounded-2xl p-6">
+            <p className="text-gray-400 text-sm font-medium mb-1">Paid / Shipped Orders</p>
+            <p className="text-3xl font-black text-white">{totalValidOrders}</p>
+          </div>
+          <div className="bg-[#111] border border-white/10 rounded-2xl p-6">
+            <p className="text-gray-400 text-sm font-medium mb-1">Total Orders (All)</p>
+            <p className="text-3xl font-black text-white">{orders.length}</p>
+          </div>
+        </div>
+
+        {/* Search and Header */}
+        <div className="flex flex-col md:flex-row items-center justify-between gap-4 mb-8">
           <div>
             <h1 className="text-3xl font-extrabold tracking-tight text-white">Admin Dashboard</h1>
             <p className="text-gray-400 mt-2">Manage orders, fulfillment, and tracking.</p>
           </div>
-          <button onClick={fetchOrders} className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg text-sm font-medium transition-colors">
+          <div className="flex w-full md:w-auto gap-4">
+            <div className="relative flex-grow md:w-80">
+              <input 
+                type="text" 
+                placeholder="Search by ID, Name, or Email..." 
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full bg-[#111] border border-white/10 rounded-lg px-4 py-2 text-white text-sm focus:outline-none focus:border-neon transition-colors"
+              />
+            </div>
+            <button onClick={fetchOrders} className="whitespace-nowrap px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg text-sm font-medium transition-colors">
             Refresh Data
           </button>
         </div>
@@ -162,13 +205,13 @@ export default function AdminOrdersClient() {
           </div>
         )}
 
-        {orders.length === 0 ? (
+        {filteredOrders.length === 0 ? (
           <div className="bg-[#111] border border-white/10 rounded-2xl p-12 text-center">
             <p className="text-gray-400">No orders found in the database.</p>
           </div>
         ) : (
           <div className="space-y-6">
-            {orders.map((order) => (
+            {filteredOrders.map((order) => (
               <div key={order.id} className="bg-[#111] border border-white/10 rounded-2xl overflow-hidden">
                 {/* Header */}
                 <div className="bg-white/5 px-6 py-4 border-b border-white/10 flex flex-wrap items-center justify-between gap-4">
