@@ -85,10 +85,10 @@ export async function POST(request: Request) {
       });
     }
 
-    // Basic shipping logic: 50 RMB per item * 8.874 = 443.7 PHP -> 44370 cents
+    // Shipping fee removed per request
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const totalQuantity = items.reduce((sum: number, item: any) => sum + item.quantity, 0);
-    const shippingFeeCents = totalQuantity > 0 ? Math.round(totalQuantity * 50 * 8.874 * 100) : 0;
+    const shippingFeeCents = 0;
     const grandTotalCents = Math.round(totalCents + shippingFeeCents);
 
     // Call PayPal API to create order

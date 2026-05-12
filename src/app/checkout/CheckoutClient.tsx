@@ -37,11 +37,12 @@ export default function CheckoutClient() {
     phone: "",
   });
 
-  // Product prices are already synced as "DDP Included" (Delivery Duty Paid), which means shipping is built into the base price.
-  // Therefore, shipping at checkout is Free to prevent double-charging the customer.
   const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
+  const totalPrice = items.reduce((sum, item) => sum + item.sku.price_cents * item.quantity, 0);
+  
+  // Shipping fee removed per request
   const shippingCents = 0;
-  const grandTotalCents = totalPrice + shippingCents;
+  const grandTotalCents = Math.round(totalPrice + shippingCents);
 
   useEffect(() => {
     setIsMounted(true);
