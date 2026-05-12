@@ -15,6 +15,7 @@ export default function AdminOrdersClient() {
   // Tracking number inputs mapped by order ID
   const [trackingInputs, setTrackingInputs] = useState<Record<string, string>>({});
   const [submittingId, setSubmittingId] = useState<string | null>(null);
+  const [editingTrackingId, setEditingTrackingId] = useState<string | null>(null);
   const [editingAddressOrder, setEditingAddressOrder] = useState<any | null>(null);
   const [addressForm, setAddressForm] = useState<any>({});
   const [searchQuery, setSearchQuery] = useState('');
@@ -124,6 +125,7 @@ export default function AdminOrdersClient() {
             : order
         )
       );
+      setEditingTrackingId(null);
     } catch (err: any) {
       showAlert("Error", err.message);
     } finally {
@@ -350,18 +352,57 @@ export default function AdminOrdersClient() {
                         </p>
                       </div>
                     ) : order.status === 'shipped' ? (
-                      <div className="bg-neon/10 p-4 rounded-xl border border-neon/30">
-                        <p className="text-xs font-bold text-neon mb-1 uppercase">Shipped via 17Track</p>
-                        <p className="text-sm text-white font-mono">{order.tracking_number}</p>
-                        <a 
-                          href={`https://t.17track.net/en#nums=${order.tracking_number}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-xs text-gray-400 hover:text-white underline mt-2 inline-block"
-                        >
-                          Verify Tracking
-                        </a>
-                      </div>
+                      editingTrackingId === order.id ? (
+                        <div className="bg-[#111] p-4 rounded-xl border border-white/10">
+                          <label className="block text-xs font-bold text-gray-400 mb-2 uppercase">Edit Tracking Number</label>
+                          <div className="flex gap-2">
+                            <input 
+                              type="text" 
+                              placeholder="e.g. YT1234567890"
+                              value={trackingInputs[order.id] !== undefined ? trackingInputs[order.id] : (order.tracking_number || '')}
+                              onChange={(e) => handleTrackingChange(order.id, e.target.value)}
+                              className="flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-neon transition-colors"
+                            />
+                            <button 
+                              onClick={() => handleShipOrder(order.id)}
+                              disabled={submittingId === order.id}
+                              className="px-4 py-2 bg-neon text-black text-sm font-bold rounded-lg hover:bg-neon/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+                            >
+                              {submittingId === order.id ? 'Saving...' : 'Update'}
+                            </button>
+                            <button
+                              onClick={() => { setEditingTrackingId(null); handleTrackingChange(order.id, ''); }}
+                              className="px-4 py-2 bg-white/5 text-white text-sm font-bold rounded-lg hover:bg-white/10 transition-colors whitespace-nowrap"
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="bg-neon/10 p-4 rounded-xl border border-neon/30">
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <p className="text-xs font-bold text-neon mb-1 uppercase">Shipped via 17Track</p>
+                              <p className="text-sm text-white font-mono">{order.tracking_number}</p>
+                            </div>
+                            <button 
+                              onClick={() => { setEditingTrackingId(order.id); handleTrackingChange(order.id, order.tracking_number); }}
+                              className="text-xs font-bold text-neon hover:underline"
+                            >
+                              Edit
+                            </button>
+                          </div>
+                          <a 
+                            href={`https://t.17track.net/en#nums=${order.tracking_number}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-xs text-gray-400 hover:text-white underline mt-2 inline-block"
+                          >
+                            Verify Tracking
+                          </a>
+                        </div>
+                      )
+                    )
                     ) : order.status === 'cancelled' ? (
                       <div className="bg-red-500/5 p-4 rounded-xl border border-red-500/20 text-sm text-red-400">
                         <p className="font-bold">Order Cancelled</p>
