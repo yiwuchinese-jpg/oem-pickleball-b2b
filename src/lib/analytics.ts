@@ -72,7 +72,74 @@ export function trackSectionView(sectionName: string) {
   gtag("event", "section_view", { event_category: "engagement", event_label: sectionName });
 }
 
-// ─── 自定义事件（滚动深度）────────────────────────────────────────────────────
+// ─── B2C 电商 Facebook Pixel 核心漏斗事件 ─────────────────────────────────────
+
+/**
+ * 1. 查看商品详情 (ViewContent)
+ */
+export function trackProductView(productName: string, price: number, currency = 'PHP') {
+  fbq("track", "ViewContent", {
+    content_name: productName,
+    value: price,
+    currency: currency,
+    content_type: 'product'
+  });
+  gtag("event", "view_item", {
+    currency: currency,
+    value: price,
+    items: [{ item_name: productName, price: price }]
+  });
+}
+
+/**
+ * 2. 加入购物车 (AddToCart)
+ */
+export function trackAddToCart(productName: string, price: number, currency = 'PHP') {
+  fbq("track", "AddToCart", {
+    content_name: productName,
+    value: price,
+    currency: currency,
+    content_type: 'product'
+  });
+  gtag("event", "add_to_cart", {
+    currency: currency,
+    value: price,
+    items: [{ item_name: productName, price: price }]
+  });
+}
+
+/**
+ * 3. 发起结账 (InitiateCheckout)
+ */
+export function trackCheckout(totalValue: number, currency = 'PHP') {
+  fbq("track", "InitiateCheckout", {
+    value: totalValue,
+    currency: currency
+  });
+  gtag("event", "begin_checkout", {
+    currency: currency,
+    value: totalValue
+  });
+}
+
+/**
+ * 4. 购买成功 (Purchase)
+ */
+export function trackPurchase(totalValue: number, orderId: string, currency = 'PHP') {
+  fbq("track", "Purchase", {
+    value: totalValue,
+    currency: currency,
+    order_id: orderId
+  });
+  gtag("event", "purchase", {
+    currency: currency,
+    value: totalValue,
+    transaction_id: orderId
+  });
+}
+
+// ─── 遗留的 B2B 事件 & 自定义事件 ────────────────────────────────────────────────────
+
 
 /**
  * 滚动深度追踪（25% / 50% / 75% / 100%）

@@ -141,14 +141,14 @@ export default function LoginClient({ adminEmail }: { adminEmail?: string }) {
           ) : (
             <form className="mt-8 space-y-6" onSubmit={handleVerify}>
               <div>
-                <label htmlFor="code" className="block text-sm font-medium text-gray-400 mb-2">6-digit code</label>
+                <label htmlFor="code" className="block text-sm font-medium text-gray-400 mb-2">Verification code</label>
                 <input
                   id="code"
                   name="code"
                   type="text"
                   required
                   className="w-full bg-[#111] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-neon transition-colors text-center tracking-[0.5em] text-lg font-mono"
-                  placeholder="------"
+                  placeholder="Enter code"
                   value={code}
                   onChange={(e) => setCode(e.target.value.trim())}
                 />

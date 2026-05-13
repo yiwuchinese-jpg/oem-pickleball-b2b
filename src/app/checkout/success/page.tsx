@@ -5,11 +5,20 @@ import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { CheckCircle } from "lucide-react";
-import { Suspense } from "react";
+import { Suspense, useEffect } from "react";
+import { trackPurchase } from "@/lib/analytics";
 
 function SuccessContent() {
   const searchParams = useSearchParams();
   const orderId = searchParams.get("order_id");
+
+  useEffect(() => {
+    if (orderId) {
+      // In a real scenario, you'd fetch the order total from your backend here.
+      // For now we trigger the Purchase event with a default value to train the pixel.
+      trackPurchase(0, orderId); 
+    }
+  }, [orderId]);
 
   return (
     <div className="bg-[#0b1120] border border-white/10 rounded-3xl p-8 max-w-lg w-full text-center shadow-2xl">
