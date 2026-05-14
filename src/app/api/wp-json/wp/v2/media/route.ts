@@ -164,7 +164,8 @@ export async function POST(request: Request) {
     await writeClient.patch(asset._id).set({
       title: titleFromForm,
       description: altText,
-      altText: altText
+      altText: altText,
+      wordpressMediaId: numericId.toString()
     }).commit();
 
     return NextResponse.json({
