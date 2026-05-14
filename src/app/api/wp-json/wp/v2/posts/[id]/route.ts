@@ -9,6 +9,13 @@ const OLD_IMAGE_DOMAINS = [
   'chineseyiwu.wordpress.com',
 ];
 
+const CATEGORY_ID_MAP: Record<number, string> = {
+  1: 'Market Insights',
+  2: 'Industry News',
+  3: 'Factory Tips',
+  4: 'Product Guides',
+};
+
 export async function OPTIONS() {
   return new NextResponse(null, { status: 200, headers: getCorsHeaders() });
 }
@@ -72,7 +79,7 @@ export async function POST(request: Request, props: { params: Promise<{ id: stri
     const titleText = typeof body.title === 'object' ? body.title.rendered : (body.title || undefined);
     const contentHtml = typeof body.content === 'object' ? body.content.rendered : (body.content || undefined);
     const excerpt = typeof body.excerpt === 'object' ? body.excerpt.rendered : (body.excerpt || undefined);
-    const { status, slug, featured_media, meta } = body;
+    const { status, slug, featured_media, meta, categories, tags } = body;
 
     // Find the existing document in Sanity by the WordPress ID
     const existingDoc = await client.fetch(`*[_type == "post" && wordpressId == $id][0]`, { id });
@@ -85,6 +92,16 @@ export async function POST(request: Request, props: { params: Promise<{ id: stri
 
     const seoTitle = meta?.rank_math_title || meta?.['_yoast_wpseo_title'] || meta?.['_aioseo_title'] || undefined;
     const seoDescription = meta?.rank_math_description || meta?.['_yoast_wpseo_metadesc'] || meta?.['_aioseo_description'] || undefined;
+
+    // Map WordPress category IDs to Sanity category string
+    const categoryIds: number[] = Array.isArray(categories) ? categories : [];
+    const sanityCategory = categoryIds.length > 0
+      ? (CATEGORY_ID_MAP[categoryIds[0]] || undefined)
+      : undefined;
+
+    // Tags: store as comma-separated string
+    const tagIds: number[] = Array.isArray(tags) ? tags : [];
+    // WP tags can come as [{id: 1, name: '...'}] or just [1, 2, 3]
 
     let mainImageRef = undefined;
     if (featured_media && featured_media > 0) {
@@ -117,6 +134,8 @@ export async function POST(request: Request, props: { params: Promise<{ id: stri
       if (seoTitle) patch.set({ seoTitle });
       if (seoDescription) patch.set({ seoDescription });
       if (mainImageRef) patch.set({ mainImage: mainImageRef });
+      if (sanityCategory) patch.set({ category: sanityCategory });
+      if (tagIds.length > 0) patch.set({ tags: tagIds.join(', ') });
       if (status === 'publish' && !existingDoc.publishedAt) {
         patch.set({ publishedAt: now });
       }
@@ -136,6 +155,8 @@ export async function POST(request: Request, props: { params: Promise<{ id: stri
         publishedAt: status === 'publish' ? now : undefined,
       };
       if (mainImageRef) sanityDoc.mainImage = mainImageRef;
+      if (sanityCategory) sanityDoc.category = sanityCategory;
+      if (tagIds.length > 0) sanityDoc.tags = tagIds.join(', ');
       await writeClient.create(sanityDoc as any);
     }
 
@@ -147,6 +168,8 @@ export async function POST(request: Request, props: { params: Promise<{ id: stri
       type: 'post',
       link: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/blog/${finalSlug || id}`,
       title: { rendered: titleText || '' },
+      categories: categoryIds,
+      tags: tagIds,
     }, { status: 200, headers: getCorsHeaders() });
 
   } catch (error: any) {

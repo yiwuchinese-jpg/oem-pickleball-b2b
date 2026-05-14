@@ -31,6 +31,7 @@ export const postType = defineType({
     defineField({ name: 'seoTitle', title: 'SEO Title', type: 'string' }),
     defineField({ name: 'seoDescription', title: 'SEO Description', type: 'text' }),
     defineField({ name: 'mainImage', title: 'Cover Image', type: 'image' }),
+    defineField({ name: 'tags', title: 'Tags', type: 'string', description: 'Comma-separated tags' }),
     defineField({ name: 'publishedAt', title: 'Published At', type: 'datetime' })
   ]
 })
