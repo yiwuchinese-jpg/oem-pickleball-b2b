@@ -35,32 +35,52 @@ export async function GET(request: Request, props: { params: Promise<{ id: strin
 
 async function replaceOldImageUrls(html: string): Promise<string> {
   const imgRegex = /<img[^>]+src=["']([^"']+)["'][^>]*>/gi;
-  const replacements: { oldUrl: string; filename: string }[] = [];
+  const replacements: { oldUrl: string; cleanFilename: string }[] = [];
   let match: RegExpExecArray | null;
 
   while ((match = imgRegex.exec(html)) !== null) {
     const oldUrl = match[1];
     const isOldDomain = OLD_IMAGE_DOMAINS.some(domain => oldUrl.includes(domain));
     if (!isOldDomain) continue;
-    const filename = oldUrl.split('/').pop()?.split('?')[0];
-    if (filename) replacements.push({ oldUrl, filename });
+    let filename = oldUrl.split('/').pop()?.split('?')[0] || '';
+    filename = filename.replace(/[^a-zA-Z0-9.\-_]/g, '_');
+    // Strip WordPress dimension suffixes like -1024x768, -300x200, -150x150 before the extension
+    const cleanFilename = filename.replace(/-\d+x\d+(?=\.\w+$)/, '');
+    replacements.push({ oldUrl, cleanFilename });
   }
 
   if (replacements.length === 0) return html;
 
-  const filenames = [...new Set(replacements.map(r => r.filename))];
+  // Collect unique clean filenames for batch query
+  const uniqueFilenames = [...new Set(replacements.map(r => r.cleanFilename))];
   try {
-    const assets: { originalFilename: string; url: string }[] = await client.fetch(
+    // Try exact originalFilename match first
+    let assets: { originalFilename: string; url: string }[] = await client.fetch(
       `*[_type == "sanity.imageAsset" && originalFilename in $filenames] { originalFilename, url }`,
-      { filenames }
+      { filenames: uniqueFilenames }
     );
+
+    // For unmatched files, try broader filename matching
+    const matchedOriginals = new Set(assets.map(a => a.originalFilename));
+    const unmatched = uniqueFilenames.filter(f => !matchedOriginals.has(f));
+
+    for (const filename of unmatched) {
+      const baseName = filename.replace(/\.\w+$/, '');
+      const fuzzy: { originalFilename: string; url: string }[] = await client.fetch(
+        `*[_type == "sanity.imageAsset" && originalFilename match $pattern] | order(_createdAt desc)[0] { originalFilename, url }`,
+        { pattern: `${baseName}*` }
+      );
+      if (fuzzy?.[0]) assets.push(fuzzy[0]);
+    }
+
     const urlByFilename: Record<string, string> = {};
     for (const asset of assets) {
       urlByFilename[asset.originalFilename] = asset.url;
     }
+
     let result = html;
-    for (const { oldUrl, filename } of replacements) {
-      const newUrl = urlByFilename[filename];
+    for (const { oldUrl, cleanFilename } of replacements) {
+      const newUrl = urlByFilename[cleanFilename] || urlByFilename[Object.keys(urlByFilename).find(k => k.includes(cleanFilename.replace(/\.\w+$/, ''))) || ''];
       if (newUrl) result = result.split(oldUrl).join(newUrl);
     }
     return result;
