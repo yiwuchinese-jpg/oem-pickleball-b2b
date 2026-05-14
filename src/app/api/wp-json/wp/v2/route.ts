@@ -11,7 +11,14 @@ export async function GET() {
     routes: {
       "/wp/v2": {},
       "/wp/v2/posts": {},
+      "/wp/v2/posts/(?P<id>[\\d]+)": {},
+      "/wp/v2/media": {},
+      "/wp/v2/media/(?P<id>[\\d]+)": {},
+      "/wp/v2/categories": {},
+      "/wp/v2/tags": {},
+      "/wp/v2/taxonomies": {},
       "/wp/v2/users/me": {},
+      "/wp/v2/plugins": {},
     }
   }, { status: 200, headers: getCorsHeaders() });
 }

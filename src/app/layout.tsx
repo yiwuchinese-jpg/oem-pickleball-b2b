@@ -6,8 +6,6 @@ import MobileStickyCta from "@/components/MobileStickyCta";
 import CartDrawer from "@/components/CartDrawer";
 import WhatsAppButton from "@/components/WhatsAppButton";
 import { CartProvider } from "@/lib/cart-context";
-import { getExchangeRate } from "@/lib/exchange-rate";
-import { ExchangeRateProvider } from "@/lib/exchange-rate-context";
 import "./globals.css";
 
 // 精简字重：只加载实际使用的 4 个字重，减少网络请求
@@ -49,10 +47,6 @@ export const metadata: Metadata = {
     description: "Premium USAPA approved pickleball paddles and balls. Direct from China.",
     images: ["/og-image.jpg"],
   },
-  icons: {
-    icon: "/logo-color.png",
-    apple: "/logo-color.png"
-  }
 };
 
 // Organization JSON-LD 结构化数据
