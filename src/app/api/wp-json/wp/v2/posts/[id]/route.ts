@@ -28,31 +28,39 @@ export async function GET(request: Request, props: { params: Promise<{ id: strin
 
 async function replaceOldImageUrls(html: string): Promise<string> {
   const imgRegex = /<img[^>]+src=["']([^"']+)["'][^>]*>/gi;
+  const replacements: { oldUrl: string; filename: string }[] = [];
   let match: RegExpExecArray | null;
-  let result = html;
 
   while ((match = imgRegex.exec(html)) !== null) {
     const oldUrl = match[1];
     const isOldDomain = OLD_IMAGE_DOMAINS.some(domain => oldUrl.includes(domain));
     if (!isOldDomain) continue;
-
     const filename = oldUrl.split('/').pop()?.split('?')[0];
-    if (!filename) continue;
-
-    try {
-      const sanityAsset = await client.fetch(
-        `*[_type == "sanity.imageAsset" && originalFilename == $filename][0] { url }`,
-        { filename }
-      );
-      if (sanityAsset?.url) {
-        result = result.split(oldUrl).join(sanityAsset.url);
-      }
-    } catch (e) {
-      console.warn('Image URL replacement failed for', filename, e);
-    }
+    if (filename) replacements.push({ oldUrl, filename });
   }
 
-  return result;
+  if (replacements.length === 0) return html;
+
+  const filenames = [...new Set(replacements.map(r => r.filename))];
+  try {
+    const assets: { originalFilename: string; url: string }[] = await client.fetch(
+      `*[_type == "sanity.imageAsset" && originalFilename in $filenames] { originalFilename, url }`,
+      { filenames }
+    );
+    const urlByFilename: Record<string, string> = {};
+    for (const asset of assets) {
+      urlByFilename[asset.originalFilename] = asset.url;
+    }
+    let result = html;
+    for (const { oldUrl, filename } of replacements) {
+      const newUrl = urlByFilename[filename];
+      if (newUrl) result = result.split(oldUrl).join(newUrl);
+    }
+    return result;
+  } catch (e) {
+    console.warn('Batch image URL replacement failed', e);
+    return html;
+  }
 }
 
 export async function POST(request: Request, props: { params: Promise<{ id: string }> }) {
