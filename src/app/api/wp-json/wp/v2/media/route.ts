@@ -31,7 +31,20 @@ export async function GET(request: Request) {
 
     let queryCondition = `_type == "sanity.imageAsset"`;
     if (search) {
-      queryCondition += ` && (title match "*${search}*" || originalFilename match "*${search}*")`;
+      const tokens = search
+        .replace(/[^\w\s]/g, ' ')
+        .split(/\s+/)
+        .filter(t => t.length >= 2)
+        .slice(0, 8);
+      if (tokens.length > 0) {
+        const clauses = tokens.flatMap(t => [
+          `originalFilename match "*${t}*"`,
+          `title match "*${t}*"`,
+          `altText match "*${t}*"`,
+          `description match "*${t}*"`,
+        ]);
+        queryCondition += ` && (${clauses.join(' || ')})`;
+      }
     }
 
     const totalCount = await client.fetch(`count(*[${queryCondition}])`);
