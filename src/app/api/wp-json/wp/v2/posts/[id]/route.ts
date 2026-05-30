@@ -2,14 +2,7 @@
 import { NextResponse } from 'next/server';
 import { writeClient } from '@/sanity/lib/write-client';
 import { client } from '@/sanity/lib/client';
-import { getCorsHeaders } from '../../utils';
-
-const CATEGORY_ID_MAP: Record<number, string> = {
-  1: 'Market Insights',
-  2: 'Industry News',
-  3: 'Factory Tips',
-  4: 'Product Guides',
-};
+import { getCorsHeaders, findCategoryNameById } from '../../utils';
 
 export async function OPTIONS() {
   return new NextResponse(null, { status: 200, headers: getCorsHeaders() });
@@ -57,7 +50,7 @@ export async function POST(request: Request, props: { params: Promise<{ id: stri
     if (categoryIds.length === 0) {
       categoryIds = [1];
     }
-    const sanityCategory = CATEGORY_ID_MAP[categoryIds[0]] || undefined;
+    const sanityCategory = findCategoryNameById(categoryIds[0]) || undefined;
 
     // Tags: store as comma-separated string
     let tagIds: number[] = Array.isArray(tags) ? tags : [];

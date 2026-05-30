@@ -29,7 +29,7 @@ export default async function BlogPage() {
   let posts = [];
   try {
     // 撤销 defined(htmlContent) 过滤条件，恢复正常显示
-    posts = await client.fetch(`*[_type == "post" && defined(slug.current) && !(slug.current match "draft-*")] | order(_createdAt desc) {
+    posts = await client.fetch(`*[_type == "post" && defined(slug.current) && defined(publishedAt)] | order(publishedAt desc) {
       title,
       "slug": slug.current,
       description,
