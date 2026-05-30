@@ -4,11 +4,6 @@ import { writeClient } from '@/sanity/lib/write-client';
 import { client } from '@/sanity/lib/client';
 import { getCorsHeaders } from '../../utils';
 
-const OLD_IMAGE_DOMAINS = [
-  'chineseyiwu.com',
-  'chineseyiwu.wordpress.com',
-];
-
 const CATEGORY_ID_MAP: Record<number, string> = {
   1: 'Market Insights',
   2: 'Industry News',
@@ -31,65 +26,6 @@ export async function GET(request: Request, props: { params: Promise<{ id: strin
     title: { rendered: 'Draft Article' },
     content: { rendered: '' }
   }, { status: 200, headers: getCorsHeaders() });
-}
-
-async function replaceOldImageUrls(html: string): Promise<string> {
-  const imgRegex = /<img[^>]+src=["']([^"']+)["'][^>]*>/gi;
-  const replacements: { oldUrl: string; rawFilename: string; cleanFilename: string }[] = [];
-  let match: RegExpExecArray | null;
-
-  while ((match = imgRegex.exec(html)) !== null) {
-    const oldUrl = match[1];
-    const isOldDomain = OLD_IMAGE_DOMAINS.some(domain => oldUrl.includes(domain));
-    if (!isOldDomain) continue;
-    const rawFilename = oldUrl.split('/').pop()?.split('?')[0] || '';
-    const sanitized = rawFilename.replace(/[^a-zA-Z0-9.\-_]/g, '_');
-    // Strip WordPress dimension suffixes like -1024x768, -300x200, -150x150 before the extension
-    const cleanFilename = sanitized.replace(/-\d+x\d+(?=\.\w+$)/, '');
-    replacements.push({ oldUrl, rawFilename: sanitized, cleanFilename });
-  }
-
-  if (replacements.length === 0) return html;
-
-  try {
-    // Try ALL filename variations: clean (no dimensions) AND raw (with dimensions)
-    // Sanity stores originalFilename with the original dimensions suffix (e.g. "image-1024x768.jpg")
-    const allFilenames = [...new Set(replacements.flatMap(r => [r.cleanFilename, r.rawFilename]))];
-
-    let assets: { originalFilename: string; url: string }[] = await client.fetch(
-      `*[_type == "sanity.imageAsset" && originalFilename in $filenames] { originalFilename, url }`,
-      { filenames: allFilenames }
-    );
-
-    // For unmatched files, try broader filename matching
-    const matchedOriginals = new Set(assets.map(a => a.originalFilename));
-    const unmatched = allFilenames.filter(f => !matchedOriginals.has(f));
-
-    for (const filename of unmatched) {
-      const baseName = filename.replace(/\.\w+$/, '');
-      const fuzzy = await client.fetch<{ originalFilename: string; url: string } | null>(
-        `*[_type == "sanity.imageAsset" && originalFilename match $pattern] | order(_createdAt desc)[0] { originalFilename, url }`,
-        { pattern: `${baseName}*` }
-      );
-      if (fuzzy) assets.push(fuzzy);
-    }
-
-    const urlByFilename: Record<string, string> = {};
-    for (const asset of assets) {
-      urlByFilename[asset.originalFilename] = asset.url;
-    }
-
-    let result = html;
-    for (const { oldUrl, rawFilename, cleanFilename } of replacements) {
-      const newUrl = urlByFilename[cleanFilename] || urlByFilename[rawFilename] ||
-        urlByFilename[Object.keys(urlByFilename).find(k => k.includes(cleanFilename.replace(/\.\w+$/, ''))) || ''];
-      if (newUrl) result = result.split(oldUrl).join(newUrl);
-    }
-    return result;
-  } catch (e) {
-    console.warn('Batch image URL replacement failed', e);
-    return html;
-  }
 }
 
 export async function POST(request: Request, props: { params: Promise<{ id: string }> }) {
@@ -146,9 +82,6 @@ export async function POST(request: Request, props: { params: Promise<{ id: stri
       }
     }
 
-    // Replace old WordPress image URLs with Sanity CDN URLs
-    const processedHtml = contentHtml ? await replaceOldImageUrls(contentHtml) : undefined;
-
     // Set publishedAt only when status === 'publish' and not already set
     const now = new Date().toISOString();
 
@@ -157,7 +90,7 @@ export async function POST(request: Request, props: { params: Promise<{ id: stri
       const patch = writeClient.patch(existingDoc._id);
       if (titleText) patch.set({ title: titleText });
       patch.set({ slug: { _type: 'slug', current: finalSlug } });
-      if (processedHtml) patch.set({ htmlContent: processedHtml });
+      if (contentHtml) patch.set({ htmlContent: contentHtml });
       if (excerpt || seoDescription) patch.set({ description: excerpt || seoDescription });
       if (seoTitle) patch.set({ seoTitle });
       if (seoDescription) patch.set({ seoDescription });
@@ -175,7 +108,7 @@ export async function POST(request: Request, props: { params: Promise<{ id: stri
         _type: 'post',
         title: titleText || 'Untitled',
         slug: { _type: 'slug', current: finalSlug },
-        htmlContent: processedHtml,
+        htmlContent: contentHtml,
         description: excerpt || seoDescription,
         seoTitle: seoTitle,
         seoDescription: seoDescription,

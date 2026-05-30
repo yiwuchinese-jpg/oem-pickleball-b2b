@@ -55,13 +55,19 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
 
     let targetSanityId = null;
 
-    // 第一层：尝试用兼容老版本的随机 ID (储存在 title 字段) 查找
-    const existingDoc = await client.fetch(`*[_type == "sanity.imageAsset" && title == $id][0] { _id }`, { id });
-    if (existingDoc && existingDoc._id) {
-      targetSanityId = existingDoc._id;
+    // 优先：直接用 wordpressMediaId 精准查找（新机制）
+    const byMediaId = await client.fetch(`*[_type == "sanity.imageAsset" && wordpressMediaId == $id][0] { _id }`, { id });
+    if (byMediaId?._id) {
+      targetSanityId = byMediaId._id;
     }
 
-    // 第二层：如果没找到，说明是新机制传图，尝试用 hashString(_id) 匹配
+    // 第二层：兼容老版本用 title 存储的 ID
+    if (!targetSanityId) {
+      const existingDoc = await client.fetch(`*[_type == "sanity.imageAsset" && title == $id][0] { _id }`, { id });
+      if (existingDoc?._id) targetSanityId = existingDoc._id;
+    }
+
+    // 第三层：hashString(_id) 兜底
     if (!targetSanityId) {
       const recentAssets = await client.fetch(`*[_type == "sanity.imageAsset"] | order(_createdAt desc)[0...200] { _id }`);
       for (const asset of recentAssets) {
