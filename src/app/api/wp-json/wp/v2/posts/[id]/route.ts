@@ -142,6 +142,33 @@ export async function POST(request: Request, props: { params: Promise<{ id: stri
       }
     }
 
+    // Fallback: if no featured_media set, try to extract the first <img> from content as cover
+    if (!mainImageRef && contentHtml) {
+      const imgMatch = contentHtml.match(/<img[^>]+src=["']([^"']+)["']/i);
+      if (imgMatch) {
+        const srcUrl = imgMatch[1];
+        // Try to match Sanity CDN URL: cdn.sanity.io/images/project/dataset/hash-WxH.ext
+        const sanityHashMatch = srcUrl.match(
+          /cdn\.sanity\.io\/images\/[^/]+\/[^/]+\/([a-f0-9]+)-\d+x\d+\.[a-z]+/i
+        );
+        if (sanityHashMatch) {
+          const assetHash = sanityHashMatch[1];
+          try {
+            const assetByUrl = await client.fetch(
+              `*[_type == "sanity.imageAsset" && _id match $pattern][0] { _id }`,
+              { pattern: `image-${assetHash}-*` }
+            );
+            if (assetByUrl?._id) {
+              mainImageRef = { _type: 'image', asset: { _type: 'reference', _ref: assetByUrl._id } };
+              console.log(`[FALLBACK] Using first content image as cover: ${assetByUrl._id}`);
+            }
+          } catch (e) {
+            console.warn('Content image fallback lookup failed', e);
+          }
+        }
+      }
+    }
+
     // Build patch with all updated fields
     const patch = writeClient.patch(docId);
     if (titleText) patch.set({ title: titleText });
