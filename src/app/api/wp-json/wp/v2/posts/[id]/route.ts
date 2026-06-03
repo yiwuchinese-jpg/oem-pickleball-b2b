@@ -152,8 +152,8 @@ export async function POST(request: Request, props: { params: Promise<{ id: stri
     if (mainImageRef) {
       patch.set({ mainImage: mainImageRef });
     } else if (typeof featured_media === 'number' && featured_media === 0) {
-      // 301 explicitly sent featured_media=0 — remove existing mainImage
-      patch.unset(['mainImage']);
+      // 301 explicitly sent featured_media=0. Do not unset,
+      // allow existing mainImage to persist if previously set.
     }
     if (sanityCategory) patch.set({ category: sanityCategory });
     if (tagIds.length > 0) patch.set({ tags: tagIds.map(t => typeof t === 'object' ? (t as any).name : t).filter(Boolean).join(', ') });
