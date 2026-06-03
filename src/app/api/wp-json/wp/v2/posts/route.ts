@@ -21,10 +21,11 @@ export async function POST(request: Request) {
       .replace(/^-+|-+$/g, '')
       .substring(0, 80) || `post-${Date.now().toString(36)}`;
 
-    // DO NOT create a Sanity document here — POST /posts/{id} handles that via createIfNotExists
-    // Return a WP-compatible response; 301 uses its own internal post_id for subsequent calls
+    // Generate a WordPress compatible, smaller random integer ID
+    const wpCompatibleId = Math.floor(Math.random() * 1_000_000_000);
+
     return NextResponse.json({
-      id: Date.now(),
+      id: wpCompatibleId,
       date: new Date().toISOString(),
       slug: finalSlug,
       status: 'draft',
