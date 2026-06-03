@@ -13,11 +13,20 @@ export async function GET(request: Request, props: { params: Promise<{ id: strin
   const { id } = params;
 
   try {
-    const post = await client.fetch(`*[_type == "post" && wordpressId == $id][0]{
+    let post = await client.fetch(`*[_type == "post" && wordpressId == $id][0]{
       title, "slug": slug.current, htmlContent, description, category, tags,
       wordpressId, publishedAt, seoTitle, seoDescription,
       "featured_media": coalesce(mainImage.asset->wordpressMediaId, 0)
     }`, { id });
+
+    if (!post) {
+      // Try by deterministic _id as fallback
+      post = await client.fetch(`*[_id == $docId][0]{
+        title, "slug": slug.current, htmlContent, description, category, tags,
+        wordpressId, publishedAt, seoTitle, seoDescription,
+        "featured_media": coalesce(mainImage.asset->wordpressMediaId, 0)
+      }`, { docId: `wp-post-${id}` });
+    }
 
     if (post) {
       const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
@@ -67,8 +76,22 @@ export async function POST(request: Request, props: { params: Promise<{ id: stri
     const excerpt = typeof body.excerpt === 'object' ? body.excerpt.rendered : (body.excerpt || undefined);
     const { status, slug, featured_media, meta, categories, tags } = body;
 
-    // Find the existing document in Sanity by the WordPress ID
-    const existingDoc = await client.fetch(`*[_type == "post" && wordpressId == $id][0]`, { id });
+    // Deterministic Sanity _id based on WP id to prevent race-condition duplicates
+    const docId = `wp-post-${id}`;
+
+    // Ensure the document exists (idempotent — safe to call concurrently)
+    try {
+      await writeClient.createIfNotExists({
+        _id: docId,
+        _type: 'post',
+        wordpressId: id,
+        title: titleText || 'Untitled',
+        slug: { _type: 'slug', current: slug || `post-${id}-${Date.now().toString(36)}` },
+      } as any);
+    } catch (e: any) {
+      // createIfNotExists fails only on hard errors; race is handled internally
+      console.warn('createIfNotExists failed:', e.message);
+    }
 
     const finalSlug = slug || (titleText ? titleText.trim().toLowerCase()
       .replace(/[\u4e00-\u9fa5]/g, (c: string) => c.charCodeAt(0).toString(16))
@@ -76,26 +99,18 @@ export async function POST(request: Request, props: { params: Promise<{ id: stri
       .replace(/^-+|-+$/g, '')
       .substring(0, 80) : `post-${id}`);
 
-    const seoTitle = meta?.rank_math_title || meta?.['_yoast_wpseo_title'] || meta?.['_aioseo_title'] || undefined;
-    const seoDescription = meta?.rank_math_description || meta?.['_yoast_wpseo_metadesc'] || meta?.['_aioseo_description'] || undefined;
+    const seoTitle: string | undefined = meta?.rank_math_title || meta?.['_yoast_wpseo_title'] || meta?.['_aioseo_title'] || undefined;
+    const seoDescription: string | undefined = meta?.rank_math_description || meta?.['_yoast_wpseo_metadesc'] || meta?.['_aioseo_description'] || undefined;
 
     // Map WordPress category IDs to Sanity category string
-    let categoryIds: number[] = Array.isArray(categories) ? categories : [];
-    // Auto-assign default category (Market Insights) if none provided
-    if (categoryIds.length === 0) {
-      categoryIds = [1];
-    }
+    const categoryIds: number[] = Array.isArray(categories) ? categories : (categories ? [categories] : [1]);
     const sanityCategory = findCategoryNameById(categoryIds[0]) || undefined;
 
     // Tags: store as comma-separated string
-    let tagIds: number[] = Array.isArray(tags) ? tags : [];
-    // Auto-assign default tags if none provided
-    if (tagIds.length === 0) {
-      tagIds = [1, 5];
-    }
-    // WP tags can come as [{id: 1, name: '...'}] or just [1, 2, 3]
+    const tagIds: number[] = Array.isArray(tags) ? tags : (tags ? [tags] : [1, 5]);
 
-    let mainImageRef = undefined;
+    // Featured image lookup
+    let mainImageRef: { _type: string; asset: { _type: string; _ref: string } } | undefined;
     if (featured_media && featured_media > 0) {
       try {
         const matchedAsset = await client.fetch(
@@ -110,66 +125,49 @@ export async function POST(request: Request, props: { params: Promise<{ id: stri
       }
     }
 
-    // Set publishedAt only when status === 'publish' and not already set
-    const now = new Date().toISOString();
+    // Build patch with all updated fields
+    const patch = writeClient.patch(docId);
+    if (titleText) patch.set({ title: titleText });
+    if (contentHtml) patch.set({ htmlContent: contentHtml });
+    if (excerpt || seoDescription) patch.set({ description: excerpt || seoDescription });
+    if (seoTitle) patch.set({ seoTitle });
+    if (seoDescription) patch.set({ seoDescription });
+    if (mainImageRef) patch.set({ mainImage: mainImageRef });
+    if (sanityCategory) patch.set({ category: sanityCategory });
+    if (tagIds.length > 0) patch.set({ tags: tagIds.map(t => typeof t === 'object' ? (t as any).name : t).filter(Boolean).join(', ') });
 
-    if (existingDoc) {
-      // Update existing document — only set slug if the post doesn't have one yet
-      const patch = writeClient.patch(existingDoc._id);
-      if (titleText) patch.set({ title: titleText });
-      // Don't overwrite existing slug to prevent conflicts on retry
-      if (!existingDoc.slug?.current) {
-        patch.set({ slug: { _type: 'slug', current: finalSlug } });
-      }
-      if (contentHtml) patch.set({ htmlContent: contentHtml });
-      if (excerpt || seoDescription) patch.set({ description: excerpt || seoDescription });
-      if (seoTitle) patch.set({ seoTitle });
-      if (seoDescription) patch.set({ seoDescription });
-      if (mainImageRef) patch.set({ mainImage: mainImageRef });
-      if (sanityCategory) patch.set({ category: sanityCategory });
-      if (tagIds.length > 0) patch.set({ tags: tagIds.join(', ') });
-      if (status === 'publish' && !existingDoc.publishedAt) {
-        patch.set({ publishedAt: now });
-      }
-      
-      await patch.commit();
-    } else {
-      // Create new document — add timestamp to slug to prevent conflicts
-      const uniqueSlug = finalSlug.includes('-') && !finalSlug.startsWith('post-')
-        ? finalSlug
-        : `${finalSlug}-${Date.now().toString(36)}`;
-      const sanityDoc: Record<string, unknown> = {
-        _type: 'post',
-        title: titleText || 'Untitled',
-        slug: { _type: 'slug', current: uniqueSlug },
-        htmlContent: contentHtml,
-        description: excerpt || seoDescription,
-        seoTitle,
-        seoDescription,
-        wordpressId: id,
-        publishedAt: status === 'publish' ? now : undefined,
-      };
-      if (mainImageRef) sanityDoc.mainImage = mainImageRef;
-      if (sanityCategory) sanityDoc.category = sanityCategory;
-      if (tagIds.length > 0) sanityDoc.tags = tagIds.join(', ');
-      await writeClient.create(sanityDoc as any);
+    // Set slug only if the body provides one
+    if (slug) patch.set({ slug: { _type: 'slug', current: finalSlug } });
+
+    // Set publishedAt when status === 'publish'
+    const now = new Date().toISOString();
+    if (status === 'publish') {
+      const current = await client.fetch(`*[_id == $id][0].publishedAt`, { id: docId });
+      if (!current) patch.set({ publishedAt: now });
     }
+
+    await patch.commit();
 
     return NextResponse.json({
       id: parseInt(id),
       date: now,
-      slug: finalSlug || id,
+      slug: finalSlug,
       status: status || 'publish',
       type: 'post',
-      link: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/blog/${finalSlug || id}`,
+      link: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/blog/${finalSlug}`,
       title: { rendered: titleText || '' },
       categories: categoryIds,
       tags: tagIds,
     }, { status: 200, headers: getCorsHeaders() });
 
   } catch (error: any) {
-    console.error('Post update failed:', error);
-    return NextResponse.json({ message: 'Post update failed', error: error?.message }, { status: 500, headers: getCorsHeaders() });
+    console.error('Post update failed:', error?.message || error, error?.statusCode);
+    return NextResponse.json({
+      code: 'wp_api_error',
+      message: 'Post update failed',
+      error: error?.message || String(error),
+      statusCode: error?.statusCode,
+    }, { status: 500, headers: getCorsHeaders() });
   }
 }
 
