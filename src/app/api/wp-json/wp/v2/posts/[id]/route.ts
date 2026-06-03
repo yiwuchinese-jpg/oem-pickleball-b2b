@@ -84,18 +84,30 @@ export async function POST(request: Request, props: { params: Promise<{ id: stri
     // Deterministic Sanity _id based on WP id to prevent race-condition duplicates
     const docId = `wp-post-${id}`;
 
-    // Ensure the document exists (idempotent — safe to call concurrently)
+    // Determine if the document needs to be created or already exists
+    let docExists = false;
     try {
-      await writeClient.createIfNotExists({
-        _id: docId,
-        _type: 'post',
-        wordpressId: id,
-        title: titleText || 'Untitled',
-        slug: { _type: 'slug', current: slug || `post-${id}-${Date.now().toString(36)}` },
-      } as any);
-    } catch (e: any) {
-      // createIfNotExists fails only on hard errors; race is handled internally
-      console.warn('createIfNotExists failed:', e.message);
+      const existing = await client.fetch(`count(*[_id == $docId])`, { docId });
+      docExists = existing > 0;
+    } catch {
+      // If lookup fails, assume it doesn't exist
+    }
+
+    if (!docExists) {
+      try {
+        await writeClient.create({
+          _id: docId,
+          _type: 'post',
+          wordpressId: id,
+          title: titleText || 'Untitled',
+          slug: { _type: 'slug', current: slug || `post-${id}` },
+        } as any);
+      } catch (e: any) {
+        // If create fails because doc already exists (race), that's OK
+        if (!String(e.message).includes('already exists') && !String(e.message).includes('conflict')) {
+          throw e;
+        }
+      }
     }
 
     const finalSlug = slug || (titleText ? titleText.trim().toLowerCase()
@@ -171,12 +183,17 @@ export async function POST(request: Request, props: { params: Promise<{ id: stri
     }, { status: 200, headers: getCorsHeaders() });
 
   } catch (error: any) {
-    console.error('Post update failed:', error?.message || error, error?.statusCode);
+    const detail = error?.response?.body || error?.details || error?.message || String(error);
+    console.error('Post update failed:', JSON.stringify({
+      docId: `wp-post-${error instanceof Error ? '' : ''}`,
+      message: error?.message,
+      statusCode: error?.statusCode,
+      body: error?.response?.body,
+    }));
     return NextResponse.json({
       code: 'wp_api_error',
       message: 'Post update failed',
-      error: error?.message || String(error),
-      statusCode: error?.statusCode,
+      error: typeof detail === 'string' ? detail.substring(0, 500) : JSON.stringify(detail).substring(0, 500),
     }, { status: 500, headers: getCorsHeaders() });
   }
 }
