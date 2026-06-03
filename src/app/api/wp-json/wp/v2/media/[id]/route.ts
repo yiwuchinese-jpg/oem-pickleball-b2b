@@ -20,6 +20,26 @@ export async function OPTIONS() {
 
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
+  try {
+    const asset = await client.fetch(`*[_type == "sanity.imageAsset" && wordpressMediaId == $id][0]{
+      _id, url, originalFilename, title, altText, description, wordpressMediaId
+    }`, { id });
+    if (asset?._id) {
+      const wpId = asset.wordpressMediaId ? parseInt(asset.wordpressMediaId) : parseInt(id);
+      return NextResponse.json({
+        id: wpId,
+        date: new Date().toISOString(),
+        slug: (asset.originalFilename || 'image').replace(/\.[^.]+$/, ''),
+        status: 'inherit',
+        type: 'attachment',
+        source_url: asset.url,
+        title: { rendered: asset.title || asset.originalFilename || '' },
+        alt_text: asset.altText || '',
+        description: { rendered: asset.description || '' },
+      }, { status: 200, headers: getCorsHeaders() });
+    }
+  } catch (e) { console.warn('GET media lookup failed:', e); }
+
   return NextResponse.json({
     id: parseInt(id),
     date: new Date().toISOString(),

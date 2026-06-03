@@ -11,13 +11,48 @@ export async function OPTIONS() {
 export async function GET(request: Request, props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
   const { id } = params;
+
+  try {
+    const post = await client.fetch(`*[_type == "post" && wordpressId == $id][0]{
+      title, "slug": slug.current, htmlContent, description, category, tags,
+      wordpressId, publishedAt, seoTitle, seoDescription,
+      "featured_media": coalesce(mainImage.asset->wordpressMediaId, 0)
+    }`, { id });
+
+    if (post) {
+      const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+      return NextResponse.json({
+        id: post.wordpressId ? parseInt(post.wordpressId) : parseInt(id),
+        date: post.publishedAt || new Date().toISOString(),
+        slug: post.slug,
+        status: post.publishedAt ? 'publish' : 'draft',
+        type: 'post',
+        link: `${SITE_URL}/blog/${post.slug}`,
+        title: { rendered: post.title || '' },
+        content: { rendered: post.htmlContent || '' },
+        excerpt: { rendered: post.description || '' },
+        featured_media: post.featured_media || 0,
+        categories: post.category ? [post.category] : [],
+        tags: post.tags ? post.tags.split(',').map((t: string) => t.trim()) : [],
+      }, { status: 200, headers: getCorsHeaders() });
+    }
+  } catch (e) {
+    console.warn('GET post lookup failed, returning placeholder:', e);
+  }
+
   return NextResponse.json({
     id: parseInt(id),
     date: new Date().toISOString(),
+    slug: `post-${id}`,
     status: 'draft',
     type: 'post',
-    title: { rendered: 'Draft Article' },
-    content: { rendered: '' }
+    link: '',
+    title: { rendered: '' },
+    content: { rendered: '' },
+    excerpt: { rendered: '' },
+    featured_media: 0,
+    categories: [],
+    tags: [],
   }, { status: 200, headers: getCorsHeaders() });
 }
 

@@ -22,7 +22,7 @@ export async function POST(request: Request) {
       _type: 'post',
       title: titleText,
       slug: { _type: 'slug', current: finalSlug },
-      publishedAt: new Date().toISOString(),
+      ...(status === 'publish' ? { publishedAt: new Date().toISOString() } : {}),
     };
     const created = await writeClient.create(sanityDoc);
 
