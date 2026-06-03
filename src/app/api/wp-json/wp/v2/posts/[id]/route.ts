@@ -114,10 +114,13 @@ export async function POST(request: Request, props: { params: Promise<{ id: stri
     const now = new Date().toISOString();
 
     if (existingDoc) {
-      // Update existing document
+      // Update existing document — only set slug if the post doesn't have one yet
       const patch = writeClient.patch(existingDoc._id);
       if (titleText) patch.set({ title: titleText });
-      patch.set({ slug: { _type: 'slug', current: finalSlug } });
+      // Don't overwrite existing slug to prevent conflicts on retry
+      if (!existingDoc.slug?.current) {
+        patch.set({ slug: { _type: 'slug', current: finalSlug } });
+      }
       if (contentHtml) patch.set({ htmlContent: contentHtml });
       if (excerpt || seoDescription) patch.set({ description: excerpt || seoDescription });
       if (seoTitle) patch.set({ seoTitle });
@@ -131,15 +134,18 @@ export async function POST(request: Request, props: { params: Promise<{ id: stri
       
       await patch.commit();
     } else {
-      // Create new document if it doesn't exist
+      // Create new document — add timestamp to slug to prevent conflicts
+      const uniqueSlug = finalSlug.includes('-') && !finalSlug.startsWith('post-')
+        ? finalSlug
+        : `${finalSlug}-${Date.now().toString(36)}`;
       const sanityDoc: Record<string, unknown> = {
         _type: 'post',
         title: titleText || 'Untitled',
-        slug: { _type: 'slug', current: finalSlug },
+        slug: { _type: 'slug', current: uniqueSlug },
         htmlContent: contentHtml,
         description: excerpt || seoDescription,
-        seoTitle: seoTitle,
-        seoDescription: seoDescription,
+        seoTitle,
+        seoDescription,
         wordpressId: id,
         publishedAt: status === 'publish' ? now : undefined,
       };

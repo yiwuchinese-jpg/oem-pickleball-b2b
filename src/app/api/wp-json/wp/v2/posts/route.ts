@@ -60,14 +60,15 @@ export async function GET() {
 
     // Map to WP REST API format for Evolution 301 Internal Linking
     const mappedPosts = posts.map((post: any, index: number) => {
-      const isDraft = post.slug.current.startsWith('draft-');
+      const slugVal = post.slug?.current || '';
+      const isDraft = slugVal.startsWith('draft-') || !post.publishedAt;
       return {
         id: post.wordpressId ? parseInt(post.wordpressId) : (index + 1),
         date: post.publishedAt || new Date().toISOString(),
-        slug: post.slug.current,
+        slug: slugVal,
         status: isDraft ? 'draft' : 'publish',
         type: 'post',
-        link: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://pickleoem.com'}/blog/${post.slug.current}`,
+        link: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://pickleoem.com'}/blog/${slugVal}`,
         title: { rendered: post.title || 'Untitled' },
         excerpt: { rendered: post.description || '' },
       };
