@@ -71,9 +71,14 @@ export async function POST(request: Request, props: { params: Promise<{ id: stri
     const { id } = params;
     const body = await request.json();
 
-    const titleText = typeof body.title === 'object' ? body.title.rendered : (body.title || undefined);
-    const contentHtml = typeof body.content === 'object' ? body.content.rendered : (body.content || undefined);
-    const excerpt = typeof body.excerpt === 'object' ? body.excerpt.rendered : (body.excerpt || undefined);
+    const titleText: string | undefined = (body.title?.rendered || body.title) || undefined;
+    const contentRaw = body.content;
+    // 301 sends content as a raw HTML string, not as {rendered: "..."}
+    const contentHtml: string | undefined =
+      typeof contentRaw === 'string' ? contentRaw
+      : contentRaw?.rendered ? contentRaw.rendered
+      : undefined;
+    const excerpt: string | undefined = (body.excerpt?.rendered || body.excerpt) || undefined;
     const { status, slug, featured_media, meta, categories, tags } = body;
 
     // Deterministic Sanity _id based on WP id to prevent race-condition duplicates
@@ -132,7 +137,12 @@ export async function POST(request: Request, props: { params: Promise<{ id: stri
     if (excerpt || seoDescription) patch.set({ description: excerpt || seoDescription });
     if (seoTitle) patch.set({ seoTitle });
     if (seoDescription) patch.set({ seoDescription });
-    if (mainImageRef) patch.set({ mainImage: mainImageRef });
+    if (mainImageRef) {
+      patch.set({ mainImage: mainImageRef });
+    } else if (typeof featured_media === 'number' && featured_media === 0) {
+      // 301 explicitly sent featured_media=0 — remove existing mainImage
+      patch.unset(['mainImage']);
+    }
     if (sanityCategory) patch.set({ category: sanityCategory });
     if (tagIds.length > 0) patch.set({ tags: tagIds.map(t => typeof t === 'object' ? (t as any).name : t).filter(Boolean).join(', ') });
 

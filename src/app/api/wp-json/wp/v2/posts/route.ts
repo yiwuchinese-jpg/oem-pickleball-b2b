@@ -1,42 +1,33 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextResponse } from 'next/server';
 import { client } from '@/sanity/lib/client';
-import { writeClient } from '@/sanity/lib/write-client';
 import { getCorsHeaders } from '../utils';
 
 export async function OPTIONS() {
   return NextResponse.json({}, { headers: getCorsHeaders() });
 }
 
-// Evolution 301 先调用 POST /posts 创建草稿，拿到 ID，再调用 POST /posts/{id} 写内容
+// Evolution 301 通过 POST /posts/{id} 创建和更新文档（createIfNotExists 幂等）
+// 此路由只用于 GET /posts 列表查询，POST 改为返回占位响应避免重复文档
 export async function POST(request: Request) {
   try {
     const body = await request.json().catch(() => ({}));
     const titleText = typeof body.title === 'object' ? body.title.rendered : (body.title || 'Untitled Draft');
-    const { status, slug } = body;
+    const { slug } = body;
 
-    const finalSlug = slug || `draft-${Date.now()}`;
+    // Generate a clean slug from title (not draft-xxx which pollutes Sanity)
+    const finalSlug = slug || titleText.trim().toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+      .substring(0, 80) || `post-${Date.now().toString(36)}`;
 
-    // 在 Sanity 创建草稿文档
-    const sanityDoc = {
-      _type: 'post',
-      title: titleText,
-      slug: { _type: 'slug', current: finalSlug },
-      ...(status === 'publish' ? { publishedAt: new Date().toISOString() } : {}),
-    };
-    const created = await writeClient.create(sanityDoc);
-
-    // 用 Sanity 文档 ID 的 hash 生成一个稳定的数字 ID
-    const numericId = Math.abs(created._id.split('').reduce((acc: number, c: string) => acc * 31 + c.charCodeAt(0), 0) % 2147483647) || Date.now();
-
-    // 把数字 ID 回写到文档，供后续步骤查询
-    await writeClient.patch(created._id).set({ wordpressId: numericId.toString() }).commit();
-
+    // DO NOT create a Sanity document here — POST /posts/{id} handles that via createIfNotExists
+    // Return a WP-compatible response; 301 uses its own internal post_id for subsequent calls
     return NextResponse.json({
-      id: numericId,
+      id: Date.now(),
       date: new Date().toISOString(),
       slug: finalSlug,
-      status: status || 'draft',
+      status: 'draft',
       type: 'post',
       link: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/blog/${finalSlug}`,
       title: { rendered: titleText },
