@@ -126,24 +126,11 @@ export async function POST(request: Request, props: { params: Promise<{ id: stri
     // Tags: store as comma-separated string
     const tagIds: number[] = Array.isArray(tags) ? tags : (tags ? [tags] : [1, 5]);
 
-    // Featured image lookup
+    // Cover image: prefer a random content image; fallback to featured_media from writing system
     let mainImageRef: { _type: string; asset: { _type: string; _ref: string } } | undefined;
-    if (featured_media && featured_media > 0) {
-      try {
-        const matchedAsset = await client.fetch(
-          `*[_type == "sanity.imageAsset" && wordpressMediaId == $mediaId][0] { _id }`,
-          { mediaId: featured_media.toString() }
-        );
-        if (matchedAsset?._id) {
-          mainImageRef = { _type: 'image', asset: { _type: 'reference', _ref: matchedAsset._id } };
-        }
-      } catch (e) {
-        console.warn('Cover image lookup failed', e);
-      }
-    }
 
-    // Fallback: if no featured_media set, pick a random <img> from content as cover
-    if (!mainImageRef && contentHtml) {
+    // Step 1: try picking a random <img> from content
+    if (contentHtml) {
       const imgMatches = [...contentHtml.matchAll(/<img[^>]+src=["']([^"']+)["']/gi)];
       if (imgMatches.length > 0) {
         const randomImg = imgMatches[Math.floor(Math.random() * imgMatches.length)];
@@ -160,12 +147,26 @@ export async function POST(request: Request, props: { params: Promise<{ id: stri
             );
             if (assetByUrl?._id) {
               mainImageRef = { _type: 'image', asset: { _type: 'reference', _ref: assetByUrl._id } };
-              console.log(`[FALLBACK] Random content image as cover: ${assetByUrl._id}`);
             }
           } catch (e) {
-            console.warn('Content image fallback lookup failed', e);
+            console.warn('Content image cover lookup failed', e);
           }
         }
+      }
+    }
+
+    // Step 2: fallback to writing system's featured_media
+    if (!mainImageRef && featured_media && featured_media > 0) {
+      try {
+        const matchedAsset = await client.fetch(
+          `*[_type == "sanity.imageAsset" && wordpressMediaId == $mediaId][0] { _id }`,
+          { mediaId: featured_media.toString() }
+        );
+        if (matchedAsset?._id) {
+          mainImageRef = { _type: 'image', asset: { _type: 'reference', _ref: matchedAsset._id } };
+        }
+      } catch (e) {
+        console.warn('featured_media lookup failed', e);
       }
     }
 
