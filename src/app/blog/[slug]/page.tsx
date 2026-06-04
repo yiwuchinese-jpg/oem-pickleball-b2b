@@ -29,6 +29,7 @@ export async function generateMetadata({
       title,
       seoDescription,
       description,
+      publishedAt,
       "coverUrl": mainImage.asset->url
     }`, { slug });
   } catch (e) {}
@@ -51,6 +52,8 @@ export async function generateMetadata({
       type: "article",
       url: `https://pickleoem.com/blog/${slug}`,
       images: [{ url: coverUrl, width: 1200, height: 630 }],
+      publishedTime: post.publishedAt,
+      modifiedTime: post.publishedAt,
     },
     twitter: {
       card: "summary_large_image",
