@@ -32,6 +32,10 @@ export function findCategoryNameById(id: number): string | undefined {
   return categories.find(c => c.id === id)?.name;
 }
 
+export function findCategoryIdByName(name: string): number | undefined {
+  return categories.find(c => c.name === name)?.id;
+}
+
 export function getNextCategoryId(): number {
   return Math.max(...categories.map(c => c.id), 0) + 1;
 }

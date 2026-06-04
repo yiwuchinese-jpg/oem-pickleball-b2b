@@ -2,7 +2,7 @@
 import { NextResponse } from 'next/server';
 import { writeClient } from '@/sanity/lib/write-client';
 import { client } from '@/sanity/lib/client';
-import { getCorsHeaders, findCategoryNameById } from '../../utils';
+import { getCorsHeaders, findCategoryNameById, findCategoryIdByName } from '../../utils';
 
 export async function OPTIONS() {
   return new NextResponse(null, { status: 200, headers: getCorsHeaders() });
@@ -41,7 +41,7 @@ export async function GET(request: Request, props: { params: Promise<{ id: strin
         content: { rendered: post.htmlContent || '' },
         excerpt: { rendered: post.description || '' },
         featured_media: post.featured_media || 0,
-        categories: post.category ? [post.category] : [],
+        categories: post.category ? [findCategoryIdByName(post.category)].filter(Boolean) as number[] : [],
         tags: post.tags ? post.tags.split(',').map((t: string) => t.trim()) : [],
       }, { status: 200, headers: getCorsHeaders() });
     }
