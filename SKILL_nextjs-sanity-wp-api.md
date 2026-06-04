@@ -69,17 +69,48 @@ publishedAt: datetime     # 发布时间（决定是否显示在博客列表）
 
 ## 关键实现细节
 
-### POST /posts — 创建草稿
+### POST /posts/{id} — 更新文章 + 特色图片兜底策略
 
 ```typescript
-const sanityDoc = {
-  _type: 'post',
-  title: titleText,
-  slug: { _type: 'slug', current: finalSlug },
-  // ⚠️ 仅 status === 'publish' 时才设 publishedAt，否则博客列表会显示空草稿
-  ...(status === 'publish' ? { publishedAt: new Date().toISOString() } : {}),
-};
+// 特色图片优先级：
+//   1. 优先从正文 HTML 中随机选一张 Sanity 图片作为封面
+//   2. 正文无 Sanity 图时，才用写作系统传的 featured_media
+let mainImageRef = undefined;
+
+// Step 1: 从正文随机选图（避免多篇文章封面雷同）
+if (contentHtml) {
+  const imgMatches = [...contentHtml.matchAll(/<img[^>]+src=["']([^"']+)["']/gi)];
+  if (imgMatches.length > 0) {
+    const randomImg = imgMatches[Math.floor(Math.random() * imgMatches.length)];
+    const srcUrl = randomImg[1];
+    const sanityHashMatch = srcUrl.match(
+      /cdn\.sanity\.io\/images\/[^/]+\/[^/]+\/([a-f0-9]+)-\d+x\d+\.[a-z]+/i
+    );
+    if (sanityHashMatch) {
+      const assetByUrl = await client.fetch(
+        `*[_type == "sanity.imageAsset" && _id match $pattern][0] { _id }`,
+        { pattern: `image-${sanityHashMatch[1]}-*` }
+      );
+      if (assetByUrl?._id) {
+        mainImageRef = { _type: 'image', asset: { _type: 'reference', _ref: assetByUrl._id } };
+      }
+    }
+  }
+}
+
+// Step 2: 正文无图时回退到写作系统的 featured_media
+if (!mainImageRef && featured_media > 0) {
+  const matchedAsset = await client.fetch(
+    `*[_type == "sanity.imageAsset" && wordpressMediaId == $mediaId][0] { _id }`,
+    { mediaId: featured_media.toString() }
+  );
+  if (matchedAsset?._id) {
+    mainImageRef = { _type: 'image', asset: { _type: 'reference', _ref: matchedAsset._id } };
+  }
+}
 ```
+
+**为什么要优先随机选图？** 301 写作系统可能给多篇文章分配相同的 `featured_media` ID（如免版权图库选到同一张"最佳"图）。如果直接用它传的 ID，多篇文章封面全部雷同。从正文中随机选一张 Sanity 图片能保证每篇文章封面都不同。
 
 ### GET /posts/{id} — ⚠️ 必须返回真实数据
 
@@ -94,6 +125,49 @@ const post = await client.fetch(`*[_type == "post" && wordpressId == $id][0]{
 ```
 
 返回完整的 WP 格式：`{ id, title: { rendered }, content: { rendered }, excerpt: { rendered }, featured_media, categories[], tags[] }`
+
+**⚠️ categories 必须返回数字 ID，不能返回分类名称字符串！**
+
+301 写作的 Python 后端会执行 `int(item)` 遍历返回的 `categories` 数组。如果返回的是名称字符串（如 `"Market Insights"`），会直接抛异常 `invalid literal for int() with base 10`。
+
+```typescript
+// utils.ts 中增加名称→ID 的反向查找
+export function findCategoryIdByName(name: string): number | undefined {
+  return categories.find(c => c.name === name)?.id;
+}
+
+// GET /posts/{id} 返回时转换
+categories: post.category
+  ? [findCategoryIdByName(post.category)].filter(Boolean) as number[]
+  : [],
+```
+
+**⚠️ featured_media 容错：当 wordpressMediaId 缺失时生成数字 ID**
+
+封面图通过 fallback 逻辑设置后，asset 上可能没有 `wordpressMediaId` 字段。GET 接口不能只依赖 `coalesce(mainImage.asset->wordpressMediaId, 0)`，需要同时获取 `mainImage.asset._ref` 并据此生成稳定的数字 ID：
+
+```typescript
+// 查询时同时取 imageRef
+const post = await client.fetch(`*[...][0]{
+  "featured_media": coalesce(mainImage.asset->wordpressMediaId, 0),
+  "imageRef": mainImage.asset._ref
+}`, params);
+
+// 简单的 hash 函数
+const hashRef = (ref: string): number => {
+  let hash = 0;
+  for (let i = 0; i < ref.length; i++) {
+    hash = ((hash << 5) - hash) + ref.charCodeAt(i);
+    hash = hash & hash;
+  }
+  return Math.abs(hash);
+};
+
+// 返回时优先 wordpressMediaId，无则用 imageRef hash
+const featuredMedia = post.featured_media || (post.imageRef ? hashRef(post.imageRef) : 0);
+```
+
+这样即使 cover image 没有 `wordpressMediaId`，301 也能看到 `featured_media > 0`，不会触发"缺少特色图片"拦截。
 
 ### GET /media?search= — 分词搜索
 
@@ -190,3 +264,6 @@ NEXT_PUBLIC_SANITY_PROJECT_ID=xxx
 | categories 无 POST 支持 | 301 创建新分类失败 → 发布拦截 | 支持动态新增分类 |
 | Sanity category 字段有 options.list 限制 | 动态分类写入时被拒 | 去掉 options.list |
 | 旧域名图片 URL 替换逻辑 | 新项目不需要 | 直接删除，存储原始 HTML |
+| GET /posts/{id} 的 categories 返回名称字符串 | 301 Python 后端 `int("Market Insights")` 抛异常 | 返回数字 ID，用 `findCategoryIdByName` 转换 |
+| 301 给多篇文章传相同 `featured_media` ID | 多篇文章封面完全雷同 | POST 时优先从正文随机选图作为封面 |
+| `mainImage` 存在但 `wordpressMediaId` 为空 | GET 返回 `featured_media: 0`，301 拦截发布 | 同时取 `imageRef`，用 hash 生成数字 ID 兜底 |
