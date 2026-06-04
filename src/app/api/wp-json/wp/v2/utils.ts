@@ -26,6 +26,7 @@ export const categories: WpCategory[] = [
   { id: 2, name: 'Industry News', slug: 'industry-news', count: 0, description: 'Latest pickleball industry updates', parent: 0, meta: [], taxonomy: 'category', link: `${SITE_URL}/category/industry-news` },
   { id: 3, name: 'Factory Tips', slug: 'factory-tips', count: 0, description: 'Manufacturing and factory insights', parent: 0, meta: [], taxonomy: 'category', link: `${SITE_URL}/category/factory-tips` },
   { id: 4, name: 'Product Guides', slug: 'product-guides', count: 0, description: 'Pickleball product buying guides', parent: 0, meta: [], taxonomy: 'category', link: `${SITE_URL}/category/product-guides` },
+  { id: 5, name: 'Custom Paddles', slug: 'custom-paddles', count: 0, description: 'Custom Paddle related articles', parent: 0, meta: [], taxonomy: 'category', link: `${SITE_URL}/category/custom-paddles` },
 ];
 
 export function findCategoryNameById(id: number): string | undefined {
