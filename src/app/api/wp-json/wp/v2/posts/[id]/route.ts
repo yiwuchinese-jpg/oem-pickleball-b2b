@@ -12,11 +12,21 @@ export async function GET(request: Request, props: { params: Promise<{ id: strin
   const params = await props.params;
   const { id } = params;
 
+  const hashRef = (ref: string): number => {
+    let hash = 0;
+    for (let i = 0; i < ref.length; i++) {
+      hash = ((hash << 5) - hash) + ref.charCodeAt(i);
+      hash = hash & hash;
+    }
+    return Math.abs(hash);
+  };
+
   try {
     let post = await client.fetch(`*[_type == "post" && wordpressId == $id][0]{
       title, "slug": slug.current, htmlContent, description, category, tags,
       wordpressId, publishedAt, seoTitle, seoDescription,
-      "featured_media": coalesce(mainImage.asset->wordpressMediaId, 0)
+      "featured_media": coalesce(mainImage.asset->wordpressMediaId, 0),
+      "imageRef": mainImage.asset._ref
     }`, { id });
 
     if (!post) {
@@ -24,12 +34,14 @@ export async function GET(request: Request, props: { params: Promise<{ id: strin
       post = await client.fetch(`*[_id == $docId][0]{
         title, "slug": slug.current, htmlContent, description, category, tags,
         wordpressId, publishedAt, seoTitle, seoDescription,
-        "featured_media": coalesce(mainImage.asset->wordpressMediaId, 0)
+        "featured_media": coalesce(mainImage.asset->wordpressMediaId, 0),
+        "imageRef": mainImage.asset._ref
       }`, { docId: `wp-post-${id}` });
     }
 
     if (post) {
       const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+      const featuredMedia = post.featured_media || (post.imageRef ? hashRef(post.imageRef) : 0);
       return NextResponse.json({
         id: post.wordpressId ? parseInt(post.wordpressId) : parseInt(id),
         date: post.publishedAt || new Date().toISOString(),
@@ -40,7 +52,7 @@ export async function GET(request: Request, props: { params: Promise<{ id: strin
         title: { rendered: post.title || '' },
         content: { rendered: post.htmlContent || '' },
         excerpt: { rendered: post.description || '' },
-        featured_media: post.featured_media || 0,
+        featured_media: featuredMedia,
         categories: post.category ? [findCategoryIdByName(post.category)].filter(Boolean) as number[] : [],
         tags: post.tags ? post.tags.split(',').map((t: string) => t.trim()) : [],
       }, { status: 200, headers: getCorsHeaders() });
