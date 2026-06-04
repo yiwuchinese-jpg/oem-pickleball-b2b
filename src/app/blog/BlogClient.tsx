@@ -16,10 +16,11 @@ const CATEGORY_COLORS: Record<string, string> = {
   "Industry News": "text-blue-400 bg-blue-400/10 border-blue-400/30",
   "Factory Tips": "text-orange-400 bg-orange-400/10 border-orange-400/30",
   "Product Guides": "text-purple-400 bg-purple-400/10 border-purple-400/30",
+  "Custom Paddles": "text-teal-400 bg-teal-400/10 border-teal-400/30",
   "Default": "text-gray-400 bg-gray-400/10 border-gray-400/30"
 };
 
-const ALL_CATEGORIES = ["All", "Market Insights", "Industry News", "Factory Tips", "Product Guides"];
+const ALL_CATEGORIES = ["All", "Market Insights", "Industry News", "Factory Tips", "Product Guides", "Custom Paddles"];
 
 export default function BlogClient({ initialPosts }: { initialPosts?: any[] }) {
   const [searchQuery, setSearchQuery] = useState("");
