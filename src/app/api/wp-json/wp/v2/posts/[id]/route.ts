@@ -142,6 +142,34 @@ export async function POST(request: Request, props: { params: Promise<{ id: stri
       }
     }
 
+    // Fallback: if no featured_media set, randomly pick one <img> from content as cover
+    if (!mainImageRef && contentHtml) {
+      const imgMatches = [...contentHtml.matchAll(/<img[^>]+src=["']([^"']+)["']/gi)];
+      if (imgMatches.length > 0) {
+        // Randomly pick one image instead of always the first
+        const pick = imgMatches[Math.floor(Math.random() * imgMatches.length)];
+        const srcUrl = pick[1];
+        const sanityHashMatch = srcUrl.match(
+          /cdn\.sanity\.io\/images\/[^/]+\/[^/]+\/([a-f0-9]+)-\d+x\d+\.[a-z]+/i
+        );
+        if (sanityHashMatch) {
+          const assetHash = sanityHashMatch[1];
+          try {
+            const assetByUrl = await client.fetch(
+              `*[_type == "sanity.imageAsset" && _id match $pattern][0] { _id }`,
+              { pattern: `image-${assetHash}-*` }
+            );
+            if (assetByUrl?._id) {
+              mainImageRef = { _type: 'image', asset: { _type: 'reference', _ref: assetByUrl._id } };
+              console.log(`[FALLBACK] Random content image as cover: ${assetByUrl._id}`);
+            }
+          } catch (e) {
+            console.warn('Content image fallback lookup failed', e);
+          }
+        }
+      }
+    }
+
     // Build patch with all updated fields
     const patch = writeClient.patch(docId);
     if (titleText) patch.set({ title: titleText });
