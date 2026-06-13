@@ -9,6 +9,9 @@ export const revalidate = false;
 export const metadata: Metadata = {
   title: "Refund Policy | DJW Pickleball",
   description: "Refund and exchange policy for DJW Pickleball Factory.",
+  alternates: {
+    canonical: "https://pickleoem.com/refund-policy",
+  },
 };
 
 export default function RefundPolicyPage() {

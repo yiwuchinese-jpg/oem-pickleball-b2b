@@ -9,6 +9,9 @@ export const revalidate = false;
 export const metadata: Metadata = {
   title: "Terms of Service | DJW Pickleball",
   description: "Terms of Service and usage conditions for DJW Pickleball Factory.",
+  alternates: {
+    canonical: "https://pickleoem.com/terms-of-service",
+  },
 };
 
 export default function TermsOfServicePage() {

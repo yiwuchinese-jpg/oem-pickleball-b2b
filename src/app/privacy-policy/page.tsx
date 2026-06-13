@@ -9,6 +9,9 @@ export const revalidate = false;
 export const metadata: Metadata = {
   title: "Privacy Policy | DJW Pickleball",
   description: "Privacy Policy and data collection practices for DJW Pickleball Factory.",
+  alternates: {
+    canonical: "https://pickleoem.com/privacy-policy",
+  },
 };
 
 export default function PrivacyPolicyPage() {

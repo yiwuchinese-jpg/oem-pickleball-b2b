@@ -100,7 +100,54 @@ export default async function ProductPage({ params }: PageProps) {
     notFound();
   }
 
+  // Product JSON-LD 结构化数据（让 Google 展示价格、库存等富媒体结果）
+  const skus = product.product_skus || [];
+  const prices = skus
+    .map((s: { price_cents?: number }) => s.price_cents)
+    .filter((c: number | undefined): c is number => typeof c === "number" && c > 0);
+  const lowPrice = prices.length ? Math.min(...prices) / 100 : undefined;
+  const highPrice = prices.length ? Math.max(...prices) / 100 : undefined;
+  const totalStock = skus.reduce(
+    (sum: number, s: { stock_quantity?: number }) => sum + (s.stock_quantity || 0),
+    0
+  );
+  const productImage =
+    product.gallery_images?.[0] || skus[0]?.image_url || "https://pickleoem.com/og-image.jpg";
+
+  const productSchema = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: product.title,
+    description: product.description || "Premium pickleball equipment direct from factory.",
+    image: productImage,
+    sku: skus[0]?.sku_code,
+    brand: {
+      "@type": "Brand",
+      name: "DJW Pickleball Factory",
+    },
+    ...(lowPrice !== undefined && {
+      offers: {
+        "@type": "AggregateOffer",
+        priceCurrency: "USD",
+        lowPrice: lowPrice.toFixed(2),
+        highPrice: (highPrice ?? lowPrice).toFixed(2),
+        offerCount: skus.length,
+        availability:
+          totalStock > 0
+            ? "https://schema.org/InStock"
+            : "https://schema.org/OutOfStock",
+        url: `https://pickleoem.com/products/${slug}`,
+      },
+    }),
+  };
+
   return (
-    <ProductDetailClient product={product} relatedProducts={relatedProducts} />
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(productSchema) }}
+      />
+      <ProductDetailClient product={product} relatedProducts={relatedProducts} />
+    </>
   );
 }

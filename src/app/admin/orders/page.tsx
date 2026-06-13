@@ -6,6 +6,7 @@ import AdminOrdersClient from './AdminOrdersClient';
 export const metadata: Metadata = {
   title: 'Admin Dashboard | DJW Pickleball',
   description: 'Manage orders and fulfillment',
+  robots: { index: false, follow: false },
 };
 
 export default async function AdminOrdersPage() {
