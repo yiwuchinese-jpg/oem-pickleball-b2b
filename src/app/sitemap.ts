@@ -1,10 +1,11 @@
 import { MetadataRoute } from "next";
+import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { client } from "@/sanity/lib/client";
 
 const BASE_URL = "https://pickleoem.com";
 
 // 动态生成 sitemap，自动包含 Sanity 中的所有博客文章
-export const revalidate = 0; // 实时同步 CMS 缓存
+export const revalidate = 3600; // 1 小时缓存，减轻 CMS/DB 压力（sitemap 无需秒级更新）
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // 静态页面
   const staticPages: MetadataRoute.Sitemap = [
@@ -58,6 +59,31 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     },
   ];
 
+  // 从 Supabase 动态获取所有上架产品详情页
+  let productPages: MetadataRoute.Sitemap = [];
+  try {
+    const supabase = createSupabaseClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    );
+    const { data: products } = await supabase
+      .from("products")
+      .select("slug, created_at")
+      .eq("is_active", true);
+
+    productPages = (products || [])
+      .filter((p) => p.slug)
+      .map((p) => ({
+        url: `${BASE_URL}/products/${p.slug}`,
+        lastModified: new Date(p.created_at || Date.now()),
+        changeFrequency: "weekly" as const,
+        priority: 0.8,
+      }));
+  } catch (error) {
+    // Supabase 连接失败时安全降级，不阻断构建
+    console.warn("Sitemap: Supabase fetch failed, skipping product pages.", error);
+  }
+
   // 从 Sanity 动态获取所有博客文章
   let blogPages: MetadataRoute.Sitemap = [];
   try {
@@ -79,5 +105,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     console.warn("Sitemap: Sanity fetch failed, using static pages only.", error);
   }
 
-  return [...staticPages, ...blogPages];
+  return [...staticPages, ...productPages, ...blogPages];
 }

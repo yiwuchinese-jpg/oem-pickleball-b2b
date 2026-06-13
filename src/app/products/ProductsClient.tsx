@@ -44,6 +44,15 @@ export default function ProductsClient({
   const [showFilters, setShowFilters] = useState(false);
   const [timeLeft, setTimeLeft] = useState({ hours: 11, minutes: 59, seconds: 59 });
 
+  // 从 URL 读取分类深链（兼容 ?category= 与 ?cat= 两种写法，让 Navbar/Footer 的分类链接真正预筛选）
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const cat = (params.get("category") || params.get("cat") || "").toUpperCase();
+    if (cat === "PADDLE" || cat === "BALL" || cat === "BUNDLE") {
+      setActiveCategory(cat as Category);
+    }
+  }, []);
+
   // Countdown timer logic
   useEffect(() => {
     const timer = setInterval(() => {

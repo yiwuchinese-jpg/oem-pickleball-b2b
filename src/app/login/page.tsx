@@ -3,6 +3,7 @@ import LoginClient from './LoginClient';
 export const metadata = {
   title: 'Login - DJW Pickleball',
   description: 'Login or create an account to manage your orders and profile.',
+  robots: { index: false, follow: false },
 };
 
 export default function LoginPage() {

@@ -184,9 +184,9 @@ function HtmlContent() {
           transition={{ duration: 2, ease: "easeOut" }}
           className="absolute inset-0 flex items-center justify-center pointer-events-none select-none z-0"
         >
-          <h1 className="text-[25vw] md:text-[18vw] font-black text-white whitespace-nowrap tracking-tighter">
+          <span aria-hidden="true" className="block text-[25vw] md:text-[18vw] font-black text-white whitespace-nowrap tracking-tighter">
             YOUR BRAND
-          </h1>
+          </span>
         </motion.div>
 
         <motion.div
@@ -386,9 +386,9 @@ function HtmlContent() {
           viewport={{ amount: 0.5 }}
           className="relative z-10 space-y-8 md:space-y-12 px-4"
         >
-          <h1 className="text-5xl md:text-[10vw] leading-none font-black uppercase tracking-tighter">
+          <h2 className="text-5xl md:text-[10vw] leading-none font-black uppercase tracking-tighter">
             Ready to <br/><span className="text-neon">Launch?</span>
-          </h1>
+          </h2>
           <p className="text-sm md:text-3xl text-gray-300 max-w-3xl mx-auto font-light">
             You know the process. Let&apos;s get your first batch into production.
           </p>
