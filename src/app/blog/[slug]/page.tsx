@@ -4,7 +4,7 @@ import BlogPostClient from "./BlogPostClient";
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { client } from "@/sanity/lib/client";
 
-export const revalidate = 0; // 实时同步 CMS 缓存
+export const revalidate = 600; // ISR：缓存 10 分钟（页面秒开），每 10 分钟同步 Sanity 新内容
 
 export async function generateStaticParams() {
   try {

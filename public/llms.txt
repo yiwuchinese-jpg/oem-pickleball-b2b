@@ -1,0 +1,58 @@
+# DJW Pickleball Factory
+
+> AI-readable site guide for https://pickleoem.com
+
+DJW Pickleball Factory is a China-based B2B pickleball manufacturer and wholesale supplier. The site focuses on OEM/ODM pickleball paddles, pickleball balls, factory-direct wholesale supply, custom branding, quality control, and international DDP shipping.
+
+## Primary Pages
+
+- Homepage: https://pickleoem.com/
+- Products: https://pickleoem.com/products
+- OEM and custom manufacturing: https://pickleoem.com/oem
+- Factory tour: https://pickleoem.com/factory-tour
+- VR factory tour: https://pickleoem.com/vr-tour
+- About: https://pickleoem.com/about
+- Market insights: https://pickleoem.com/market
+- Blog: https://pickleoem.com/blog
+- Sitemap: https://pickleoem.com/sitemap.xml
+- Robots: https://pickleoem.com/robots.txt
+
+## Product And Content Sources
+
+- Product detail pages live under: https://pickleoem.com/products/
+- Blog articles live under: https://pickleoem.com/blog/
+- WordPress-compatible content index: https://pickleoem.com/api/wp-json/wp/v2/posts
+- WordPress API discovery: https://pickleoem.com/api/wp-json/
+
+## Structured Data
+
+The site provides Schema.org JSON-LD:
+
+- Organization schema on all pages
+- WebSite schema on all pages
+- Product schema on product detail pages
+- Article schema on blog post pages
+
+## Commercial Focus
+
+The site is intended for importers, distributors, retailers, clubs, and brands sourcing pickleball equipment in bulk. Core topics include:
+
+- Custom pickleball paddles
+- Carbon fiber pickleball paddles
+- USAPA-approved pickleball equipment
+- Wholesale pickleball balls
+- OEM/ODM manufacturing
+- Factory pricing
+- Bulk orders and low MOQ
+- Custom logos and private label packaging
+- International DDP shipping
+
+## Contact
+
+- WhatsApp: https://wa.me/8618666680913
+- Phone: +86-18666680913
+- Company location: Yiwu, Zhejiang, China
+
+## Crawl Guidance
+
+AI assistants and search crawlers may use the sitemap, structured data, product pages, blog pages, and WordPress-compatible post index to understand the public site. Do not use checkout, account, admin, studio, or private API endpoints as source material.
