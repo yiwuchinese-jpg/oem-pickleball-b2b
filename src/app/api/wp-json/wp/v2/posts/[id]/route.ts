@@ -2,7 +2,7 @@
 import { NextResponse } from 'next/server';
 import { writeClient } from '@/sanity/lib/write-client';
 import { client } from '@/sanity/lib/client';
-import { getCorsHeaders, findCategoryNameById, findCategoryIdByName } from '../../utils';
+import { getCorsHeaders, findCategoryNameById, findCategoryIdByName, requireWpAuth } from '../../utils';
 
 export async function OPTIONS() {
   return new NextResponse(null, { status: 200, headers: getCorsHeaders() });
@@ -79,6 +79,9 @@ export async function GET(request: Request, props: { params: Promise<{ id: strin
 
 export async function POST(request: Request, props: { params: Promise<{ id: string }> }) {
   try {
+    const authError = requireWpAuth(request);
+    if (authError) return authError;
+
     const params = await props.params;
     const { id } = params;
     const body = await request.json();

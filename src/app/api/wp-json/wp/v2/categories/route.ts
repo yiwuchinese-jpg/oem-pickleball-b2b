@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getCorsHeaders, categories, getNextCategoryId } from '../utils';
+import { getCorsHeaders, categories, getNextCategoryId, requireWpAuth } from '../utils';
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
 
@@ -9,6 +9,9 @@ export async function GET() { return NextResponse.json(categories, { headers: ge
 
 export async function POST(request: Request) {
   try {
+    const authError = requireWpAuth(request);
+    if (authError) return authError;
+
     const body = await request.json().catch(() => ({}));
     const name = body.name || '';
     if (!name) {

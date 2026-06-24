@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getCorsHeaders } from '../utils';
+import { getCorsHeaders, requireWpAuth } from '../utils';
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
 
@@ -19,6 +19,9 @@ export async function GET() { return NextResponse.json(TAGS, { headers: getCorsH
 
 export async function POST(request: Request) {
   try {
+    const authError = requireWpAuth(request);
+    if (authError) return authError;
+
     const body = await request.json();
     const name = body.name || body.name?.rendered || 'New Tag';
     const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');

@@ -1,11 +1,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextResponse } from 'next/server';
 import { writeClient } from '@/sanity/lib/write-client';
-import { getCorsHeaders } from '../utils';
+import { clampInt, getCorsHeaders, requireWpAuth } from '../utils';
 import { client } from '@/sanity/lib/client';
 import { Buffer } from 'buffer';
 
 export const runtime = 'nodejs';
+
+const MAX_UPLOAD_BYTES = 12 * 1024 * 1024;
 
 function hashString(str: string): number {
   let hash = 0;
@@ -22,8 +24,8 @@ export async function OPTIONS() { return NextResponse.json({}, { headers: getCor
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
-    const page = parseInt(searchParams.get('page') || '1', 10);
-    const perPage = parseInt(searchParams.get('per_page') || '10', 10);
+    const page = clampInt(searchParams.get('page'), 1, 1, 10000);
+    const perPage = clampInt(searchParams.get('per_page'), 10, 1, 100);
     const search = searchParams.get('search') || '';
 
     const start = (page - 1) * perPage;
@@ -91,6 +93,18 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
+    const authError = requireWpAuth(request);
+    if (authError) return authError;
+
+    const contentLength = Number.parseInt(request.headers.get('content-length') || '0', 10);
+    if (Number.isFinite(contentLength) && contentLength > MAX_UPLOAD_BYTES) {
+      return NextResponse.json({
+        code: 'rest_upload_size_limit_exceeded',
+        message: 'Image upload exceeds the configured size limit.',
+        data: { status: 413 },
+      }, { status: 413, headers: getCorsHeaders() });
+    }
+
     let uploadBuffer: Buffer | null = null;
     let filename = `upload-${Date.now()}.jpg`;
     let altText = "AI Generated Image";
@@ -164,6 +178,14 @@ export async function POST(request: Request) {
       }, { status: 400, headers: getCorsHeaders() });
     }
 
+    if (uploadBuffer.length > MAX_UPLOAD_BYTES) {
+      return NextResponse.json({
+        code: 'rest_upload_size_limit_exceeded',
+        message: 'Image upload exceeds the configured size limit.',
+        data: { status: 413 },
+      }, { status: 413, headers: getCorsHeaders() });
+    }
+
     // 清理文件名，防止特殊字符导致 Sanity 炸掉
     filename = filename.replace(/[^a-zA-Z0-9.\-_]/g, '_');
 
@@ -228,6 +250,5 @@ export async function POST(request: Request) {
     }, { status: 400, headers: getCorsHeaders() });
   }
 }
-
 
 

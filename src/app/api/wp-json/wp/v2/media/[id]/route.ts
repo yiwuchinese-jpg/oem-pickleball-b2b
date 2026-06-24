@@ -2,7 +2,7 @@
 import { NextResponse } from 'next/server';
 import { writeClient } from '@/sanity/lib/write-client';
 import { client } from '@/sanity/lib/client';
-import { getCorsHeaders } from '../../utils';
+import { getCorsHeaders, requireWpAuth } from '../../utils';
 
 function hashString(str: string): number {
   let hash = 0;
@@ -51,6 +51,9 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const authError = requireWpAuth(request);
+    if (authError) return authError;
+
     const { id } = await params;
     const targetIdNum = parseInt(id);
     

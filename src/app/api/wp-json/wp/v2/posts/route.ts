@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextResponse } from 'next/server';
 import { client } from '@/sanity/lib/client';
-import { getCorsHeaders } from '../utils';
+import { getCorsHeaders, requireWpAuth } from '../utils';
 
 export async function OPTIONS() {
   return NextResponse.json({}, { headers: getCorsHeaders() });
@@ -11,6 +11,9 @@ export async function OPTIONS() {
 // 此路由只用于 GET /posts 列表查询，POST 改为返回占位响应避免重复文档
 export async function POST(request: Request) {
   try {
+    const authError = requireWpAuth(request);
+    if (authError) return authError;
+
     const body = await request.json().catch(() => ({}));
     const titleText = typeof body.title === 'object' ? body.title.rendered : (body.title || 'Untitled Draft');
     const { slug } = body;

@@ -7,6 +7,50 @@ export function getCorsHeaders() {
   };
 }
 
+export function unauthorizedResponse() {
+  return Response.json(
+    { code: 'rest_forbidden', message: 'Unauthorized', data: { status: 401 } },
+    {
+      status: 401,
+      headers: {
+        ...getCorsHeaders(),
+        'WWW-Authenticate': 'Basic realm="Evolution 301"',
+      },
+    }
+  );
+}
+
+export function serverAuthConfigErrorResponse() {
+  return Response.json(
+    { code: 'server_config_error', message: 'Missing WP mock credentials', data: { status: 500 } },
+    { status: 500, headers: getCorsHeaders() }
+  );
+}
+
+export function isWpRequestAuthorized(request: Request) {
+  const user = process.env.WP_MOCK_USERNAME;
+  const pass = process.env.WP_MOCK_PASSWORD;
+
+  if (!user || !pass) return null;
+
+  const authHeader = request.headers.get('authorization');
+  const expectedToken = Buffer.from(`${user}:${pass}`).toString('base64');
+  return authHeader === `Basic ${expectedToken}`;
+}
+
+export function requireWpAuth(request: Request) {
+  const authorized = isWpRequestAuthorized(request);
+  if (authorized === null) return serverAuthConfigErrorResponse();
+  if (!authorized) return unauthorizedResponse();
+  return null;
+}
+
+export function clampInt(value: string | null, fallback: number, min: number, max: number) {
+  const parsed = Number.parseInt(value || '', 10);
+  if (!Number.isFinite(parsed)) return fallback;
+  return Math.min(Math.max(parsed, min), max);
+}
+
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
 
 export interface WpCategory {
