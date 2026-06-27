@@ -5,9 +5,17 @@ import Image from "next/image";
 import NextLink from "next/link";
 import { motion } from "framer-motion";
 import { ArrowLeft, Clock, Tag } from "lucide-react";
-import DOMPurify from 'isomorphic-dompurify';
+import { useState, useEffect } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+
+// Pure string transforms (no DOM) — safe to run during server render.
+function transformHtml(html: string) {
+  return html
+    .replace(/<a([^>]*)>(.*?(?:Browse|Explore|Contact|Quote|WhatsApp|Shop|Buy|See|Range|Product|Wholesale|Learn|More|Click|Here).*?)<\/a>/gi, '<a$1 class="ai-cta-button">$2</a>')
+    .replace(/(?<![a-z-])background(?:-color)?\s*:\s*[^;"']+/gi, 'background-color:transparent')
+    .replace(/(?<![a-z-])color\s*:\s*[^;"']+/gi, 'color:inherit');
+}
 
 export default function BlogPostClient({ post }: { post: any }) {
   const displayPost = {
@@ -20,12 +28,18 @@ export default function BlogPostClient({ post }: { post: any }) {
     htmlContent: post.htmlContent || `<p>${post.description || "No content provided."}</p>`
   };
 
-  const cleanHtml = DOMPurify.sanitize(
-    displayPost.htmlContent
-      .replace(/<a([^>]*)>(.*?(?:Browse|Explore|Contact|Quote|WhatsApp|Shop|Buy|See|Range|Product|Wholesale|Learn|More|Click|Here).*?)<\/a>/gi, '<a$1 class="ai-cta-button">$2</a>')
-      .replace(/(?<![a-z-])background(?:-color)?\s*:\s*[^;"']+/gi, 'background-color:transparent')
-      .replace(/(?<![a-z-])color\s*:\s*[^;"']+/gi, 'color:inherit')
-  );
+  // Server render uses the regex-transformed trusted CMS HTML (no jsdom → no lambda
+  // crash on ISR on-demand renders). The browser then re-sanitizes with native
+  // DOMPurify after hydration as defense-in-depth. Initial state matches the server
+  // string to avoid a hydration mismatch.
+  const [cleanHtml, setCleanHtml] = useState(() => transformHtml(displayPost.htmlContent));
+  useEffect(() => {
+    let active = true;
+    import("isomorphic-dompurify").then(({ default: DOMPurify }) => {
+      if (active) setCleanHtml(DOMPurify.sanitize(transformHtml(displayPost.htmlContent)));
+    });
+    return () => { active = false; };
+  }, [displayPost.htmlContent]);
 
   return (
     <>
