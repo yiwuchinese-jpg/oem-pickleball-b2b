@@ -38,15 +38,41 @@ export async function POST(req: NextRequest) {
     // no body / not JSON — still revalidate the listing
   }
 
-  // 列表页 + 首页（如展示最新文章）始终刷新
+  // 列表页 + 首页（如展示最新文章）+ sitemap 始终刷新
   revalidatePath('/blog');
   revalidatePath('/');
+  revalidatePath('/sitemap.xml');
   // 命中的具体文章页
   if (slug) revalidatePath(`/blog/${slug}`);
+
+  // IndexNow：把变更的 URL 即时推送给 Bing / Yandex（Google 不支持 IndexNow）
+  let indexnow: string | null = null;
+  // IndexNow key 是公开值（验证文件 /<key>.txt），硬编码兜底，无需额外配置环境变量
+  const key = process.env.INDEXNOW_KEY || '5fe8958d1fb3dc72823fa450e4c44c5c';
+  if (key) {
+    const base = 'https://pickleoem.com';
+    const urlList = [`${base}/blog`, ...(slug ? [`${base}/blog/${slug}`] : [])];
+    try {
+      const r = await fetch('https://api.indexnow.org/indexnow', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json; charset=utf-8' },
+        body: JSON.stringify({
+          host: 'pickleoem.com',
+          key,
+          keyLocation: `${base}/${key}.txt`,
+          urlList,
+        }),
+      });
+      indexnow = `${r.status}`;
+    } catch {
+      indexnow = 'error';
+    }
+  }
 
   return NextResponse.json({
     revalidated: true,
     slug: slug ?? null,
+    indexnow,
     now: Date.now(),
   });
 }

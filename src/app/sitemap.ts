@@ -5,7 +5,7 @@ import { client } from "@/sanity/lib/client";
 const BASE_URL = "https://pickleoem.com";
 
 // 动态生成 sitemap，自动包含 Sanity 中的所有博客文章
-export const revalidate = 3600; // 1 小时缓存，减轻 CMS/DB 压力（sitemap 无需秒级更新）
+export const revalidate = 600; // 10 分钟缓存；发布时 /api/revalidate 会即时刷新 /sitemap.xml
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // 静态页面
   const staticPages: MetadataRoute.Sitemap = [
