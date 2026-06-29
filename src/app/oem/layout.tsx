@@ -24,5 +24,34 @@ export const metadata: Metadata = {
 };
 
 export default function OEMLayout({ children }: { children: React.ReactNode }) {
-  return children;
+  return (
+    <>
+      {/* SSR SEO content — the OEM page itself is a client-rendered 3D experience whose
+          headings/copy don't reach the server HTML. This block gives crawlers a real H1
+          and keyword-rich intro. Screen-reader accessible (clip), not display:none. */}
+      <section
+        style={{
+          position: "absolute",
+          width: 1,
+          height: 1,
+          padding: 0,
+          margin: -1,
+          overflow: "hidden",
+          clip: "rect(0,0,0,0)",
+          whiteSpace: "normal",
+          border: 0,
+        }}
+      >
+        <h1>OEM Pickleball Paddle Manufacturer — Custom Carbon Paddle Factory in China</h1>
+        <p>
+          Source pickleball factory in China for OEM and ODM custom paddles and rotomolded
+          balls. We build raw T700 carbon and fiberglass faces on 13mm and 16mm polypropylene
+          honeycomb cores, in thermoformed unibody or cold-pressed construction, with custom
+          surface texture, edge guard, grip, and full private-label branding. Low MOQ,
+          golden-sample approval, pre-shipment QC, and DDP shipping worldwide.
+        </p>
+      </section>
+      {children}
+    </>
+  );
 }
