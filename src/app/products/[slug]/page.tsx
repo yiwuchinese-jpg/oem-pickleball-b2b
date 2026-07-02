@@ -141,11 +141,26 @@ export default async function ProductPage({ params }: PageProps) {
     }),
   };
 
+  // BreadcrumbList JSON-LD（Home > Products > 产品）
+  const breadcrumbSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Home", item: "https://pickleoem.com" },
+      { "@type": "ListItem", position: 2, name: "Products", item: "https://pickleoem.com/products" },
+      { "@type": "ListItem", position: 3, name: product.title, item: `https://pickleoem.com/products/${slug}` },
+    ],
+  };
+
   return (
     <>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(productSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
       />
       <ProductDetailClient product={product} relatedProducts={relatedProducts} />
     </>

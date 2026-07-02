@@ -26,12 +26,13 @@ DJW Pickleball Factory is a China-based B2B pickleball manufacturer and wholesal
 
 ## Structured Data
 
-The site provides Schema.org JSON-LD:
+The site provides Schema.org JSON-LD (canonical entity name: "DJW Pickleball Factory"):
 
 - Organization schema on all pages
 - WebSite schema on all pages
-- Product schema on product detail pages
-- Article schema on blog post pages
+- Product + BreadcrumbList schema on product detail pages
+- Article + BreadcrumbList schema on blog post pages
+- FAQPage schema inside blog articles
 
 ## Commercial Focus
 

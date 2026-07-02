@@ -18,14 +18,19 @@ function transformHtml(html: string) {
 }
 
 export default function BlogPostClient({ post }: { post: any }) {
+  const rawHtml = post.htmlContent || `<p>${post.description || "No content provided."}</p>`;
+  // 按正文词数估算阅读时长（~220 wpm），替代硬编码
+  const wordCount = rawHtml.replace(/<[^>]+>/g, " ").split(/\s+/).filter(Boolean).length;
+  const readMinutes = Math.max(1, Math.round(wordCount / 220));
+
   const displayPost = {
     title: post.title,
     cover: post.coverUrl || "/gallery/gallery_17.jpg",
     date: post.publishedAt ? new Date(post.publishedAt).toLocaleDateString("en-US", { month: 'long', day: 'numeric', year: 'numeric' }) : "Recently",
-    readTime: "5 min read",
-    tag: "Industry News",
+    readTime: `${readMinutes} min read`,
+    tag: post.category || "Industry News",
     tagColor: "text-neon bg-neon/10 border-neon/30",
-    htmlContent: post.htmlContent || `<p>${post.description || "No content provided."}</p>`
+    htmlContent: rawHtml
   };
 
   // Server render uses the regex-transformed trusted CMS HTML (no jsdom → no lambda

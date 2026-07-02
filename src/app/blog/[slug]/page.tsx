@@ -77,6 +77,7 @@ export default async function BlogPostPage({
       title,
       htmlContent,
       description,
+      category,
       "coverUrl": mainImage.asset->url,
       publishedAt
     }`, { slug });
@@ -95,15 +96,15 @@ export default async function BlogPostPage({
     dateModified: post.publishedAt,
     author: {
       "@type": "Organization",
-      name: "OEM Pickleball Factory",
+      name: "DJW Pickleball Factory",
       url: "https://pickleoem.com",
     },
     publisher: {
       "@type": "Organization",
-      name: "OEM Pickleball Factory",
+      name: "DJW Pickleball Factory",
       logo: {
         "@type": "ImageObject",
-        url: "https://pickleoem.com/og-image.jpg",
+        url: "https://pickleoem.com/logo-color.png",
       },
     },
     mainEntityOfPage: {
@@ -112,11 +113,26 @@ export default async function BlogPostPage({
     },
   };
 
+  // BreadcrumbList JSON-LD（Home > Blog > 文章）
+  const breadcrumbSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Home", item: "https://pickleoem.com" },
+      { "@type": "ListItem", position: 2, name: "Blog", item: "https://pickleoem.com/blog" },
+      { "@type": "ListItem", position: 3, name: post.title, item: `https://pickleoem.com/blog/${slug}` },
+    ],
+  };
+
   return (
     <>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
       />
       <BlogPostClient post={post} />
     </>

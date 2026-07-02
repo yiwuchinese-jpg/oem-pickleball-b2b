@@ -38,7 +38,7 @@ export const metadata: Metadata = {
         alt: "DJW Pickleball Wholesale Premium Quality",
       },
     ],
-    locale: "en_PH",
+    locale: "en_US",
     type: "website",
   },
   twitter: {
@@ -74,6 +74,19 @@ const organizationSchema = {
   ],
 };
 
+// WebSite JSON-LD 结构化数据（配合 Organization，帮助搜索引擎/AI 理解站点实体）
+const websiteSchema = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  name: "DJW Pickleball Factory",
+  url: "https://pickleoem.com",
+  publisher: {
+    "@type": "Organization",
+    name: "DJW Pickleball Factory",
+    url: "https://pickleoem.com",
+  },
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -88,6 +101,11 @@ export default function RootLayout({
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
+        />
+        {/* WebSite 结构化数据 */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }}
         />
         {/* Facebook Pixel — ID: 1461017509091314 */}
         <Script id="fb-pixel" strategy="afterInteractive">
