@@ -34,6 +34,17 @@ const nextConfig: NextConfig = {
       { source: '/wp-json/:path*', destination: '/api/wp-json/:path*' },
     ];
   },
+  async redirects() {
+    return [
+      // 旧乱数字 slug → 语义化 slug（2026-07 内容清理）
+      { source: '/blog/post-187185255', destination: '/blog/cheap-pickleball-buckets-hidden-cost-per-bucket', permanent: true },
+      { source: '/blog/post-725334274', destination: '/blog/oem-vs-private-label-pickleball-paddles', permanent: true },
+      { source: '/blog/post-82343419', destination: '/blog/pickleball-paddle-wholesale-sourcing-retailer-guide', permanent: true },
+      // 已删除的重复文章 → 保留的原版（301 承接可能已有的收录）
+      { source: '/blog/delaminated-pickleball-paddle-repair1', destination: '/blog/delaminated-pickleball-paddle-repair', permanent: true },
+      { source: '/blog/pickleball-grip-size-guide1', destination: '/blog/pickleball-grip-size-guide', permanent: true },
+    ];
+  },
   async headers() {
     return [
       {
