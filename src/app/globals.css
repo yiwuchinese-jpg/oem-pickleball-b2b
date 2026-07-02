@@ -246,3 +246,57 @@ select {
   background-position: right 12px center;
   padding-right: 32px;
 }
+
+/* YouTube click-to-play facade（文章内 [data-yt-id] 视频块）
+   样式放这里而非内联：BlogPostClient 的 transformHtml 会把内联 background/color 改写，
+   且 DOMPurify 会剥掉内联事件 —— 点击行为由 BlogPostClient 的事件委托接管 */
+.yt-facade {
+  position: relative;
+  width: 100%;
+  padding-bottom: 56.25%;
+  height: 0;
+  overflow: hidden;
+  border-radius: 8px;
+  background-color: #000 !important;
+  cursor: pointer;
+}
+.yt-facade > img {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  object-fit: cover;
+  margin: 0;
+}
+.yt-facade iframe {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  border: 0;
+}
+.yt-facade-btn {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 72px; height: 50px;
+  background-color: #ff0000 !important;
+  opacity: 0.92;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+.yt-facade-tri {
+  display: block;
+  width: 0; height: 0;
+  border-style: solid;
+  border-width: 11px 0 11px 19px;
+  border-color: transparent transparent transparent #ffffff !important;
+  margin-left: 5px;
+}
+.yt-embed figcaption {
+  font-size: 14px;
+  color: #9ca3af;
+  margin-top: 8px;
+  line-height: 1.5;
+}

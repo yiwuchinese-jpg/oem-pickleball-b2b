@@ -5,7 +5,7 @@ import Image from "next/image";
 import NextLink from "next/link";
 import { motion } from "framer-motion";
 import { ArrowLeft, Clock, Tag } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
@@ -45,6 +45,25 @@ export default function BlogPostClient({ post }: { post: any }) {
     });
     return () => { active = false; };
   }, [displayPost.htmlContent]);
+
+  // YouTube click-to-play facade（文章 HTML 里的 [data-yt-id] 块）。
+  // 不能用内联 onclick —— DOMPurify 消毒会剥掉事件属性，所以用事件委托在这里接管：
+  // 点击后把 facade 替换成带 autoplay 的标准 youtube.com/embed iframe（绕过被动嵌入的 bot 墙）。
+  const articleRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const root = articleRef.current;
+    if (!root) return;
+    const onClick = (e: Event) => {
+      const el = (e.target as HTMLElement).closest?.("[data-yt-id]") as HTMLElement | null;
+      if (!el || !root.contains(el)) return;
+      const id = el.getAttribute("data-yt-id");
+      if (!id || !/^[\w-]{6,20}$/.test(id)) return;
+      el.removeAttribute("data-yt-id");
+      el.innerHTML = `<iframe style="position:absolute;top:0;left:0;width:100%;height:100%;border:0" src="https://www.youtube.com/embed/${id}?autoplay=1" allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture;web-share" allowfullscreen></iframe>`;
+    };
+    root.addEventListener("click", onClick);
+    return () => root.removeEventListener("click", onClick);
+  }, []);
 
   return (
     <>
@@ -89,7 +108,8 @@ export default function BlogPostClient({ post }: { post: any }) {
           </header>
 
           {/* Content */}
-          <div 
+          <div
+            ref={articleRef}
             className="prose prose-invert prose-lg max-w-none prose-headings:font-black prose-headings:uppercase prose-headings:tracking-tight prose-p:text-gray-300 prose-a:text-neon hover:prose-a:text-white transition-colors prose-li:text-gray-300 prose-td:text-gray-300 prose-th:text-white prose-strong:text-white"
             dangerouslySetInnerHTML={{ __html: cleanHtml }}
           />
