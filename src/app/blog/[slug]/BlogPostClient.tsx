@@ -114,6 +114,25 @@ export default function BlogPostClient({ post }: { post: any }) {
             dangerouslySetInnerHTML={{ __html: cleanHtml }}
           />
 
+          {/* Author / E-E-A-T byline — visible attribution for reader + search-engine trust */}
+          <aside
+            className="mt-16 bg-white/5 border border-white/10 rounded-2xl p-6 md:p-8"
+            aria-label="Article author"
+          >
+            <div className="flex items-start gap-4">
+              <div className="flex-shrink-0 w-14 h-14 rounded-full bg-neon/20 border-2 border-neon/40 flex items-center justify-center">
+                <img src="/logo-white.png" alt="DJW Pickleball Factory" className="w-8 h-8 object-contain" />
+              </div>
+              <div>
+                <p className="text-xs uppercase tracking-wider text-gray-500 mb-1 font-bold">Written by</p>
+                <h3 className="text-lg font-black text-white mb-2">The DJW Pickleball Factory Team</h3>
+                <p className="text-sm text-gray-400 leading-relaxed">
+                  Source manufacturer of rotomolded 40-hole outdoor pickleballs and carbon-fiber paddles based in Yiwu, Zhejiang, China. In-house rotomolding line and paddle production, supplying importers, private-label brands, distributors, and facility operators across the US, EU, and Southeast Asia. Published {displayPost.date} · Last reviewed {displayPost.date}.
+                </p>
+              </div>
+            </div>
+          </aside>
+
           {/* CTA Banner */}
           <div className="mt-20 bg-neon/5 border border-neon/20 rounded-3xl p-8 md:p-12 text-center">
             <h3 className="text-2xl font-black text-white mb-4">Want to source this quality for your brand?</h3>
