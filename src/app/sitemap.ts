@@ -5,7 +5,12 @@ import { client } from "@/sanity/lib/client";
 const BASE_URL = "https://pickleoem.com";
 
 // 动态生成 sitemap，自动包含 Sanity 中的所有博客文章
-export const revalidate = 600; // 10 分钟缓存；发布时 /api/revalidate 会即时刷新 /sitemap.xml
+// 2026-09-09 修复：之前用 ISR(revalidate=600) 时，线上 sitemap 卡在 8 月 4 日的数据整整一个月
+// （Vercel 缓存 age 7 天、/api/revalidate 也刷不动，Google 读到的一直是 129 条）。
+// 改成每次请求实时生成 + Sanity/Supabase 查询强制不走 Next 数据缓存。
+// Googlebot 一天只读几次 sitemap，动态生成的成本可以忽略。
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // 静态页面（不写 lastModified：内容基本不变，new Date() 每次生成都变对 Google 是噪音信号）
   const staticPages: MetadataRoute.Sitemap = [
@@ -83,7 +88,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       `*[_type == "post" && defined(slug.current) && !(slug.current match "draft-*")] | order(publishedAt desc) {
         "slug": slug.current,
         publishedAt
-      }`
+      }`,
+      {},
+      { cache: "no-store" }
     );
 
     blogPages = posts.map((post) => ({
