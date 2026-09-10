@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { BLOG_REDIRECTS } from "./src/lib/blogRedirects";
 
 const nextConfig: NextConfig = {
   images: {
@@ -43,6 +44,12 @@ const nextConfig: NextConfig = {
       // 已删除的重复文章 → 保留的原版（301 承接可能已有的收录）
       { source: '/blog/delaminated-pickleball-paddle-repair1', destination: '/blog/delaminated-pickleball-paddle-repair', permanent: true },
       { source: '/blog/pickleball-grip-size-guide1', destination: '/blog/pickleball-grip-size-guide', permanent: true },
+      // 2026-09-10 同题变体合并（映射见 src/lib/blogRedirects.ts）
+      ...Object.entries(BLOG_REDIRECTS).map(([from, to]) => ({
+        source: `/blog/${from}`,
+        destination: `/blog/${to}`,
+        permanent: true,
+      })),
     ];
   },
   async headers() {

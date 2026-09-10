@@ -1,6 +1,7 @@
 import { MetadataRoute } from "next";
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { client } from "@/sanity/lib/client";
+import { REDIRECTED_SLUGS } from "@/lib/blogRedirects";
 
 const BASE_URL = "https://pickleoem.com";
 
@@ -93,7 +94,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       { cache: "no-store" }
     );
 
-    blogPages = posts.map((post) => ({
+    // 已 301 合并的变体不再列出（见 src/lib/blogRedirects.ts）
+    blogPages = posts.filter((post) => !REDIRECTED_SLUGS.has(post.slug)).map((post) => ({
       url: `${BASE_URL}/blog/${post.slug}`,
       lastModified: post.publishedAt ? new Date(post.publishedAt) : new Date(),
       changeFrequency: "monthly" as const,
