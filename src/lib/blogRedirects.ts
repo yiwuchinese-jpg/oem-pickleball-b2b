@@ -31,6 +31,9 @@ export const BLOG_REDIRECTS: Record<string, string> = {
   "pickleball-oem-manufacturer": "pickleball-oem-factory-vetting",
   // pickleball paddle edge guard peeling / loose repair
   "edge-guard-peeling-fix": "loose-pickleball-paddle-edge-guard-repair",
+  // 2026-09-18 定制球拍三篇互食合并：两篇「抓了没收录」的并入已收录的 keeper（独有章节已搬入）
+  "custom-pickleball-paddle-manufacturing": "custom-pickleball-paddle",
+  "pickleball-paddle-customization": "custom-pickleball-paddle",
   // pickleball ball machine OEM sourcing
   "pickleball-ball-machine-oem": "pickleball-ball-machine-oem-sourcing",
 };
