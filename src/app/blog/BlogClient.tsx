@@ -22,6 +22,23 @@ const CATEGORY_COLORS: Record<string, string> = {
 
 const ALL_CATEGORIES = ["All", "Market Insights", "Industry News", "Factory Tips", "Product Guides", "Custom Paddles"];
 
+function getPaginationItems(currentPage: number, totalPages: number): Array<number | string> {
+  const wanted = new Set([1, totalPages, currentPage - 1, currentPage, currentPage + 1]);
+  if (currentPage <= 3) [2, 3, 4].forEach(page => wanted.add(page));
+  if (currentPage >= totalPages - 2) [totalPages - 3, totalPages - 2, totalPages - 1].forEach(page => wanted.add(page));
+  const pages = [...wanted].filter(page => page >= 1 && page <= totalPages).sort((a, b) => a - b);
+  const items: Array<number | string> = [];
+  pages.forEach((page, index) => {
+    if (index > 0) {
+      const previous = pages[index - 1];
+      if (page - previous === 2) items.push(previous + 1);
+      else if (page - previous > 2) items.push(`gap-${page}`);
+    }
+    items.push(page);
+  });
+  return items;
+}
+
 export default function BlogClient({ initialPosts }: { initialPosts?: any[] }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
@@ -58,6 +75,7 @@ export default function BlogClient({ initialPosts }: { initialPosts?: any[] }) {
 
   // Paginate posts
   const totalPages = Math.ceil(filteredPosts.length / POSTS_PER_PAGE) || 1;
+  const paginationItems = getPaginationItems(currentPage, totalPages);
   const paginatedPosts = useMemo(() => {
     const start = (currentPage - 1) * POSTS_PER_PAGE;
     return filteredPosts.slice(start, start + POSTS_PER_PAGE);
@@ -215,23 +233,38 @@ export default function BlogClient({ initialPosts }: { initialPosts?: any[] }) {
 
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="max-w-6xl mx-auto px-5 md:px-8 mt-16 flex justify-center items-center gap-2">
+          <nav aria-label="Blog pagination" className="max-w-6xl mx-auto px-5 md:px-8 mt-16 flex justify-center items-center gap-2">
             <button
               onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
               disabled={currentPage === 1}
+              aria-label="Previous blog page"
               className="p-2.5 rounded-full border border-white/10 text-white disabled:opacity-30 disabled:cursor-not-allowed hover:bg-white/5 transition-colors"
             >
               <ChevronLeft className="w-5 h-5" />
             </button>
             
-            <div className="flex items-center gap-1.5 px-4">
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+            <select
+              aria-label="Go to blog page"
+              className="sm:hidden w-36 min-h-11 rounded-lg border border-white/10 bg-background px-3 text-sm text-white"
+              value={currentPage}
+              onChange={event => setCurrentPage(Number(event.target.value))}
+            >
+              {Array.from({ length: totalPages }, (_, index) => index + 1).map(page => (
+                <option key={page} value={page}>Page {page} of {totalPages}</option>
+              ))}
+            </select>
+            <div className="hidden sm:flex items-center gap-1.5 px-2">
+              {paginationItems.map(page => typeof page === "string" ? (
+                <span key={page} aria-hidden="true" className="px-1 text-gray-500">…</span>
+              ) : (
                 <button
                   key={page}
                   onClick={() => setCurrentPage(page)}
+                  aria-label={`Go to page ${page}`}
+                  aria-current={currentPage === page ? "page" : undefined}
                   className={`w-10 h-10 rounded-full text-sm font-bold transition-all ${
-                    currentPage === page 
-                      ? "bg-neon text-black" 
+                    currentPage === page
+                      ? "bg-neon text-black"
                       : "text-gray-400 hover:text-white hover:bg-white/5"
                   }`}
                 >
@@ -243,11 +276,12 @@ export default function BlogClient({ initialPosts }: { initialPosts?: any[] }) {
             <button
               onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
               disabled={currentPage === totalPages}
+              aria-label="Next blog page"
               className="p-2.5 rounded-full border border-white/10 text-white disabled:opacity-30 disabled:cursor-not-allowed hover:bg-white/5 transition-colors"
             >
               <ChevronRight className="w-5 h-5" />
             </button>
-          </div>
+          </nav>
         )}
 
         {/* Bottom CTA */}
