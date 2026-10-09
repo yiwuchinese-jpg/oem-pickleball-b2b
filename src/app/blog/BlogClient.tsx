@@ -245,7 +245,7 @@ export default function BlogClient({ initialPosts }: { initialPosts?: any[] }) {
             
             <select
               aria-label="Go to blog page"
-              className="sm:hidden w-36 min-h-11 rounded-lg border border-white/10 bg-background px-3 text-sm text-white"
+              className="sm:hidden w-44 min-h-11 rounded-lg border border-white/10 bg-background px-3 text-sm text-white"
               value={currentPage}
               onChange={event => setCurrentPage(Number(event.target.value))}
             >
