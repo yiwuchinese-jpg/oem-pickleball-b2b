@@ -9,12 +9,19 @@ import { useState, useEffect, useRef } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
-// Pure string transforms (no DOM) — safe to run during server render.
+// Pure presentation transforms (no DOM) — safe during server render.
+// CTA styling is explicit in CMS markup; never infer it from link words.
+// In particular, section anchors and citations are navigation, not buttons.
 function transformHtml(html: string) {
-  return html
-    .replace(/<a([^>]*)>(.*?(?:Browse|Explore|Contact|Quote|WhatsApp|Shop|Buy|See|Range|Product|Wholesale|Learn|More|Click|Here).*?)<\/a>/gi, '<a$1 class="ai-cta-button">$2</a>')
-    .replace(/(?<![a-z-])background(?:-color)?\s*:\s*[^;"']+/gi, 'background-color:transparent')
-    .replace(/(?<![a-z-])color\s*:\s*[^;"']+/gi, 'color:inherit');
+  // Limit palette normalization to actual inline style attributes. A global
+  // color regex can consume markup following an unterminated CSS declaration.
+  return html.replace(/(\sstyle\s*=\s*)(["'])([\s\S]*?)\2/gi,
+    (_attribute, prefix: string, quote: string, style: string) => {
+      const themedStyle = style
+        .replace(/(?<![a-z-])background(?:-color)?\s*:\s*[^;]+/gi, "background-color:transparent")
+        .replace(/(?<![a-z-])color\s*:\s*[^;]+/gi, "color:inherit");
+      return `${prefix}${quote}${themedStyle}${quote}`;
+    });
 }
 
 export default function BlogPostClient({ post }: { post: any }) {

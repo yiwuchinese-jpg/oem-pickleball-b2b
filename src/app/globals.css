@@ -300,3 +300,53 @@ select {
   margin-top: 8px;
   line-height: 1.5;
 }
+
+/* Article navigation is a compact TOC, independent of conversion button styles. */
+.prose :is(nav[data-media-insertion="media-toc"], nav[aria-label="Article sections"], nav[aria-label="Table of contents"]) {
+  margin: 1.5rem 0 2rem;
+  padding: 1.25rem;
+  border: 1px solid #333;
+  border-radius: 0.75rem;
+  background: rgba(255, 255, 255, 0.03);
+  font-size: 1rem;
+  line-height: 1.65;
+}
+.prose :is(nav[data-media-insertion="media-toc"], nav[aria-label="Article sections"], nav[aria-label="Table of contents"]) ul {
+  display: grid;
+  gap: 0.5rem;
+  list-style: none;
+  margin: 0.75rem 0 0;
+  padding: 0;
+}
+.prose :is(nav[data-media-insertion="media-toc"], nav[aria-label="Article sections"], nav[aria-label="Table of contents"]) li {
+  margin: 0;
+  padding: 0;
+}
+/* Even legacy, explicitly marked fragment links must remain normal navigation. */
+.prose nav a,
+.prose a.ai-cta-button[href^="#"] {
+  display: inline !important;
+  background: transparent !important;
+  color: var(--color-neon) !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  transform: none !important;
+  font-weight: 500 !important;
+  text-transform: none !important;
+  letter-spacing: normal !important;
+  text-decoration: underline !important;
+  text-underline-offset: 0.2em;
+  overflow-wrap: anywhere;
+}
+.prose nav a:focus-visible {
+  outline: 2px solid var(--color-neon);
+  outline-offset: 3px;
+}
+
+/* Keep linked article headings below the fixed site header. */
+.prose :is(h2[id], h3[id]) {
+  scroll-margin-top: 7rem;
+}
