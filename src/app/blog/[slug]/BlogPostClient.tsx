@@ -65,8 +65,17 @@ export default function BlogPostClient({ post }: { post: any }) {
       if (!el || !root.contains(el)) return;
       const id = el.getAttribute("data-yt-id");
       if (!id || !/^[\w-]{6,20}$/.test(id)) return;
+      // Preserve an accessible name on the activated player.
+      const videoTitle = (
+        el.getAttribute("data-approved-video-title")
+        || el.getAttribute("aria-label")
+        || el.querySelector("button")?.getAttribute("aria-label")
+        || ""
+      ).trim() || "YouTube video";
       el.removeAttribute("data-yt-id");
       el.innerHTML = `<iframe style="position:absolute;top:0;left:0;width:100%;height:100%;border:0" src="https://www.youtube.com/embed/${id}?autoplay=1" allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture;web-share" allowfullscreen></iframe>`;
+      const iframe = el.querySelector("iframe");
+      if (iframe) iframe.title = videoTitle;
     };
     root.addEventListener("click", onClick);
     return () => root.removeEventListener("click", onClick);
